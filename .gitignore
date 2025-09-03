@@ -1,0 +1,11 @@
+Windows-Debug/
+Windows-Release/
+WSL-Debug/
+WSL-Release/
+.vscode/
+build/
+*.log
+*.obj
+*.pdb
+*.exe
+.idea/
