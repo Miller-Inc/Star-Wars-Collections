@@ -27,10 +27,34 @@ set(STAR_WARS_CARD_GAME_HEADERS
         include/EngineTypes/Logger.h
 )
 
+
+
 add_executable(StarWarsCardGame main.cpp
         ${STAR_WARS_CARD_GAME_HEADERS}
         ${STAR_WARS_CARD_GAME_SOURCES}
 )
+
+# This condition checks if the current platform is Windows.
+if(WIN32)
+    # The commands inside this block will only be executed on Windows.
+    message(STATUS "Static linking is enabled for Windows.")
+
+    # Check if the Visual Studio compiler is being used.
+    if(MSVC)
+        # Statically link the C++ runtime for MSVC.
+        set_property(
+                TARGET StarWarsCardGame PROPERTY MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Release>:Release>"
+        )
+        # Check if the MinGW compiler is being used.
+    elseif(MINGW)
+        # Pass the static linking flags for MinGW.
+        target_link_options(StarWarsCardGame PRIVATE
+                -static
+                -static-libgcc
+                -static-libstdc++
+        )
+    endif()
+endif()
 
 target_include_directories(StarWarsCardGame PRIVATE imgui third_party/imgui)
 target_include_directories(StarWarsCardGame PRIVATE imgui third_party/imgui/backends)
