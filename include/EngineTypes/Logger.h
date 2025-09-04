@@ -27,7 +27,8 @@ namespace MillerInc
             LogTemp,
             LogGraphics,
             LogAudio,
-            LogPhysics
+            LogPhysics,
+            LogCore,
         };
 
         static void Log(Category category, Verbosity verbosity, const MString& message, const char* file, int line)
@@ -41,6 +42,7 @@ namespace MillerInc
                 case LogGraphics: categoryStr = "Graphics"; break;
                 case LogAudio: categoryStr = "Audio"; break;
                 case LogPhysics: categoryStr = "Physics"; break;
+                case LogCore: categoryStr = "Core"; break;
             }
 
             switch (verbosity)

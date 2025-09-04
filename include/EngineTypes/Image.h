@@ -15,5 +15,6 @@ namespace MillerInc
         std::string Name;
         MillerInc::MSize Size{}; // Size of the image
         MillerInc::MVector2 Position{}; // Position of the image
+        MillerInc::MVector2 Scale{ 1.0f, 1.0f}; // Scale of the image
     } MImage;
 }

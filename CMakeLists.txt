@@ -25,6 +25,8 @@ set(STAR_WARS_CARD_GAME_HEADERS
         include/EngineTypes/Image.h
         include/EngineTypes/String.h
         include/EngineTypes/Logger.h
+        include/Game/GameInstance.h
+        src/Game/GameInstance.cpp
 )
 
 
@@ -58,7 +60,7 @@ endif()
 
 target_include_directories(StarWarsCardGame PRIVATE imgui third_party/imgui)
 target_include_directories(StarWarsCardGame PRIVATE imgui third_party/imgui/backends)
-target_include_directories(StarWarsCardGame PRIVATE imgui third_party/stb)
+target_include_directories(StarWarsCardGame PRIVATE stb third_party/stb)
 target_include_directories(StarWarsCardGame PRIVATE SWCG include)
 
 set(IMGUI_DIR third_party/imgui)

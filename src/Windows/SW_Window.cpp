@@ -6,67 +6,90 @@
 #include "imgui.h"
 #include <stdexcept>
 #include "EngineTypes/Logger.h"
+#include "Game/GameInstance.h"
 
 namespace MillerInc::GUI
 {
     SW_Window::SW_Window(const SW_Window& other)
     {
-        Setup = other.Setup;
-    }
-
-    SW_Window::SW_Window(GPU::VulkanSetup* setup)
-    {
-        Setup = setup;
+        Name = other.Name;
+        Textures = other.Textures;
     }
 
     void SW_Window::Init()
     {
         Textures.clear();
+        if (mGameInstance)
+        {
+            mGameInstance->OpenImage("Resources/Textures/palm_trees.png",
+                "Palm Tree", {50, 50}, {1.0f, 1.0f});
+            if (MImage* image = mGameInstance->GetImage("Palm Tree"))
+            {
+                const bool contain = !Textures.contains(image->Name);
+                AddImage(image);
 
+            }
+        }
+        else
+        {
+            M_LOGGER(Logger::LogCore, Logger::Warning, "GameInstance is null. Cannot load default images.");
+        }
     }
 
-    void SW_Window::Init(const MString& WindowName)
+    void SW_Window::Init(const MString& WindowName, MillerInc::Game::GameInstance* GameInstance)
     {
         Name = WindowName;
+        mGameInstance = GameInstance;
         Init();
     }
 
-    void SW_Window::TestWindow() const
+    void SW_Window::Init(MillerInc::Game::GameInstance* GameInstance)
+    {
+        Name = "SW_Window";
+        mGameInstance = GameInstance;
+        Init();
+    }
+
+    void SW_Window::TestWindow()
     {
         ImGui::Begin(Name.c_str());
+
         // Images are last due to cursor movement
         for (const auto& [name, image] : Textures)
         {
-            ImGui::SetCursorPos({image.Position.x, image.Position.y});
+            ImGui::SetCursorPos({image->Position.x, image->Position.y});
             ImGui::Text("Image Name: %s", name.c_str());
-            ImGui::Image(image.TextureHandle.textureId, ImVec2(image.Size.x, image.Size.y));
+            ImGui::Image(image->TextureHandle.textureId, ImVec2(image->Size.x * image->Scale.x, image->Size.y * image->Scale.y));
+            ImGui::Separator();
         }
         ImGui::End();
     }
 
-    bool SW_Window::AddImage(const MString& PathToImage, const MString& ImageName, const MVector2& Position)
+    void SW_Window::AddImage(MImage* image)
     {
-        const MillerInc::GPU::VulkanSetup::TextureImage texture = Setup->CreateTextureImage(PathToImage);
-        if (texture.image == VK_NULL_HANDLE)
+        if (!image)
         {
-            M_LOGGER(Logger::LogGraphics, Logger::Error, "Failed to load texture image from path: " + PathToImage);
-            return false;
+            M_LOGGER(Logger::LogCore, Logger::Error, "Image is null.");
+            return;
         }
-        MImage newImage = {texture, ImageName, texture.size, Position};
-        Textures.emplace(ImageName, newImage);
-        return true;
+
+        if (!Textures.contains(image->Name))
+        {
+            Textures.emplace(image->Name, image);
+            return;
+        }
+        else
+        {
+            M_LOGGER(Logger::LogCore, Logger::Warning, "Image with name " + image->Name + " already exists in window " + Name + ". Use a different name.");
+            return;
+        }
     }
 
-    MImage* SW_Window::GetImage(const MString& ImageName)
+    MImage* SW_Window::RemoveImage(const MString& ImageName)
     {
-        return &Textures[ImageName];
-    }
-
-    bool SW_Window::RemoveImage(const MString& ImageName)
-    {
-        MImage* image = GetImage(ImageName);
+        MImage* image = Textures[ImageName];
         Textures.erase(ImageName);
-        return image != nullptr;
+        return image;
     }
 }
 
