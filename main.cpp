@@ -13,8 +13,9 @@
 //   the backend itself (imgui_impl_vulkan.cpp), but should PROBABLY NOT be used by your own engine/app code.
 // Read comments in imgui_impl_vulkan.h.
 
-#define DEMO true
+#define DEMO false
 #define STB_IMAGE_IMPLEMENTATION
+#define WINDOW_TITLE "Star Wars Card Game"
 #include "stb_image.h"
 
 #include "imgui.h"
@@ -25,6 +26,8 @@
 #include <cstdlib>         // abort
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
+
+#include "Windows/SW_Window.h"
 
 // This example doesn't compile with Emscripten yet! Awaiting SDL3 support.
 #ifdef __EMSCRIPTEN__
@@ -131,7 +134,7 @@ static void SetupVulkan(ImVector<const char*> instance_extensions)
         volkLoadInstance(g_Instance);
 #endif
 
-        // Setup the debug report callback
+        // Set up the debug report callback
 #ifdef APP_USE_VULKAN_DEBUG_REPORT
         auto f_vkCreateDebugReportCallbackEXT = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(g_Instance, "vkCreateDebugReportCallbackEXT");
         IM_ASSERT(f_vkCreateDebugReportCallbackEXT != nullptr);
@@ -360,7 +363,7 @@ int main(int argc, char** argv)
     // Create window with Vulkan graphics context
     float main_scale = SDL_GetDisplayContentScale(SDL_GetPrimaryDisplay());
     SDL_WindowFlags window_flags = SDL_WINDOW_VULKAN | SDL_WINDOW_RESIZABLE | SDL_WINDOW_HIDDEN | SDL_WINDOW_HIGH_PIXEL_DENSITY;
-    SDL_Window* window = SDL_CreateWindow("Dear ImGui SDL3+Vulkan example", (int)(1280 * main_scale), (int)(720 * main_scale), window_flags);
+    SDL_Window* window = SDL_CreateWindow(WINDOW_TITLE, (int)(1280 * main_scale), (int)(720 * main_scale), window_flags);
     if (window == nullptr)
     {
         printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
@@ -463,6 +466,22 @@ int main(int argc, char** argv)
     bool show_another_window = false;
     ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
+    VkCommandPoolCreateInfo poolInfo{};
+    poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+    poolInfo.queueFamilyIndex = g_QueueFamily;
+    poolInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
+    VkCommandPool commandPool;
+    vkCreateCommandPool(g_Device, &poolInfo, nullptr, &commandPool);
+
+    // Pass g_Queue and commandPool to VulkanSetup
+    MillerInc::GPU::VulkanSetup VulkanSetupParams(g_Instance, g_Device, g_PhysicalDevice, g_Queue, commandPool);
+    MillerInc::GUI::SW_Window testWindow(&VulkanSetupParams);
+    MillerInc::GUI::SW_Window testWindow2(&VulkanSetupParams);
+    testWindow.Init("Window 1");
+    testWindow2.Init("Window 2");
+    testWindow.AddImage("Resources/Textures/image.png", "Default", { 30, 30 });
+    testWindow2.AddImage("Resources/Textures/palm_trees.png", "Palm Tree", { 50, 50 });
+
     // Main loop
     bool done = false;
     while (!done)
@@ -545,7 +564,8 @@ int main(int argc, char** argv)
         }
 #endif
         // Add new windows here...
-
+        testWindow.TestWindow();
+        testWindow2.TestWindow();
 
         // Rendering
         ImGui::Render();

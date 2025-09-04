@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(StarWarsCardGame)
+project(StarWarsCardGame CXX)
 
 set(CMAKE_CXX_STANDARD 20)
 
@@ -13,13 +13,18 @@ add_subdirectory(third_party/sdl3 EXCLUDE_FROM_ALL)
 
 set(STAR_WARS_CARD_GAME_SOURCES
         src/Windows/SW_Window.cpp
+        src/Vulkan/VulkanSetup.cpp
+        src/EngineTypes/Vector.cpp
 )
 
 set(STAR_WARS_CARD_GAME_HEADERS
         include/Windows/SW_Window.h
         third_party/stb/stb_image.h
-        include/Vulkan/VulkanSetup.h
-        src/Vulkan/VulkanSetup.cpp
+        include/Vulkan/VulkanSetup.hpp
+        include/EngineTypes/Vector.h
+        include/EngineTypes/Image.h
+        include/EngineTypes/String.h
+        include/EngineTypes/Logger.h
 )
 
 add_executable(StarWarsCardGame main.cpp
@@ -46,5 +51,10 @@ target_sources(StarWarsCardGame PRIVATE
 
 # Link to the actual SDL3 library.
 target_link_libraries(StarWarsCardGame PRIVATE SDL3::SDL3)
-
 target_link_libraries(StarWarsCardGame PRIVATE Vulkan::Vulkan)
+
+add_custom_command(TARGET StarWarsCardGame POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/Resources
+        $<TARGET_FILE_DIR:StarWarsCardGame>/Resources
+)

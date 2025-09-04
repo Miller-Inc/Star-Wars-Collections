@@ -3,49 +3,72 @@
 //
 
 #include <Windows/SW_Window.h>
-#include "imgui_impl_vulkan.h"
-#include "stb_image.h"
+#include "imgui.h"
 #include <stdexcept>
-#include <cstring>
-#include <iostream>
-extern uint32_t findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlags properties);
-extern void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory);
+#include "EngineTypes/Logger.h"
 
-void SW_Window::Init(const VkDevice &device)
+namespace MillerInc::GUI
 {
-    // 1. Load image data using stb_image
-    int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load("path/to/your/image.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-
-    if (!pixels)
+    SW_Window::SW_Window(const SW_Window& other)
     {
-        // Handle error
-        return;
+        Setup = other.Setup;
     }
 
-    VkDeviceSize imageSize = texWidth * texHeight * 4;
-
-    if (Setup)
+    SW_Window::SW_Window(GPU::VulkanSetup* setup)
     {
-        const VulkanSetup::TextureImage image = Setup->CreateTextureImage("image"); // Ensure this path is correct
-        VkImage vulkanImage = image.image;
-        VkDeviceMemory devMem = image.memory;
+        Setup = setup;
+    }
+
+    void SW_Window::Init()
+    {
+        Textures.clear();
 
     }
 
+    void SW_Window::Init(const MString& WindowName)
+    {
+        Name = WindowName;
+        Init();
+    }
 
+    void SW_Window::TestWindow() const
+    {
+        ImGui::Begin(Name.c_str());
+        // Images are last due to cursor movement
+        for (const auto& [name, image] : Textures)
+        {
+            ImGui::SetCursorPos({image.Position.x, image.Position.y});
+            ImGui::Text("Image Name: %s", name.c_str());
+            ImGui::Image(image.TextureHandle.textureId, ImVec2(image.Size.x, image.Size.y));
+        }
+        ImGui::End();
+    }
 
+    bool SW_Window::AddImage(const MString& PathToImage, const MString& ImageName, const MVector2& Position)
+    {
+        const MillerInc::GPU::VulkanSetup::TextureImage texture = Setup->CreateTextureImage(PathToImage);
+        if (texture.image == VK_NULL_HANDLE)
+        {
+            M_LOGGER(Logger::LogGraphics, Logger::Error, "Failed to load texture image from path: " + PathToImage);
+            return false;
+        }
+        MImage newImage = {texture, ImageName, texture.size, Position};
+        Textures.emplace(ImageName, newImage);
+        return true;
+    }
 
-    TexWidth = texWidth;
-    TexHeight = texHeight;
+    MImage* SW_Window::GetImage(const MString& ImageName)
+    {
+        return &Textures[ImageName];
+    }
 
+    bool SW_Window::RemoveImage(const MString& ImageName)
+    {
+        MImage* image = GetImage(ImageName);
+        Textures.erase(ImageName);
+        return image != nullptr;
+    }
 }
-
-void SW_Window::TestWindow() const
-{
-    ImGui::Image(TextureID, ImVec2((float)TexWidth, (float)TexHeight));
-}
-
 
 
 
