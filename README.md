@@ -26,7 +26,7 @@ This project is not only a tribute to the beloved game, but also a project for
 ## Building
 1. Clone the repository:
     ```bash
-       git clone git@github.com:Miller-Inc/Star-Wars-Collections.git --recurse-submodules
+    git clone git@github.com:Miller-Inc/Star-Wars-Collections.git --recurse-submodules
     ```
 2. Create a build directory and navigate into it:
     ```bash
