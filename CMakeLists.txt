@@ -10,11 +10,15 @@ find_package(Vulkan REQUIRED)
 
 # This assumes the SDL source is available in the third_party/sdl3 directory.
 add_subdirectory(third_party/sdl3 EXCLUDE_FROM_ALL)
+add_subdirectory(third_party/sdl3_net)
 
 set(STAR_WARS_CARD_GAME_SOURCES
         src/Windows/SW_Window.cpp
         src/Vulkan/VulkanSetup.cpp
         src/EngineTypes/Vector.cpp
+        src/Network/NetworkManager.cpp
+        src/EngineTypes/Array.cpp
+        src/Game/GameInstance.cpp
 )
 
 set(STAR_WARS_CARD_GAME_HEADERS
@@ -26,7 +30,8 @@ set(STAR_WARS_CARD_GAME_HEADERS
         include/EngineTypes/String.h
         include/EngineTypes/Logger.h
         include/Game/GameInstance.h
-        src/Game/GameInstance.cpp
+        include/Network/NetworkManager.h
+        include/EngineTypes/Array.h
 )
 
 
@@ -76,8 +81,7 @@ target_sources(StarWarsCardGame PRIVATE
 )
 
 # Link to the actual SDL3 library.
-target_link_libraries(StarWarsCardGame PRIVATE SDL3::SDL3)
-target_link_libraries(StarWarsCardGame PRIVATE Vulkan::Vulkan)
+target_link_libraries(StarWarsCardGame PUBLIC SDL3::SDL3 SDL3_net::SDL3_net Vulkan::Vulkan)
 
 add_custom_command(TARGET StarWarsCardGame POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
