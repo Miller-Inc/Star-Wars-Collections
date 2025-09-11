@@ -111,18 +111,24 @@ namespace MillerInc::Game
 
     MImage* GameInstance::GetImage(const MString& ImageName)
     {
-        return &Textures[ImageName];
+        MImage* image = &Textures[ImageName];
+        image->ref_count++;
+        return image;
     }
 
     MImage* GameInstance::OpenGetImage(const MString& PathToImage, const MString& ImageName, const MVector2& Position, const MSize& Scale)
     {
         if (Textures.contains(ImageName))
         {
-            return &Textures[ImageName];
+            MImage* image = &Textures[ImageName];
+            image->ref_count++;
+            return image;
         }
         if (OpenImage(PathToImage, ImageName, Position, Scale))
         {
-            return &Textures[ImageName];
+            MImage* image = &Textures[ImageName];
+            image->ref_count++;
+            return image;
         }
 
         M_LOGGER(Logger::LogGraphics, Logger::Error, "Failed to open and get image: " + ImageName);
@@ -131,9 +137,52 @@ namespace MillerInc::Game
 
     bool GameInstance::RemoveImage(const MString& ImageName)
     {
-        MImage* image = GetImage(ImageName);
-        Textures.erase(ImageName);
-        return image != nullptr;
+        const auto it = Textures.find(ImageName);
+        if (it == Textures.end())
+            return false;
+
+        MImage* image = &it->second;
+        if (image->ref_count > 0)
+        {
+            image->ref_count--;
+            if (image->ref_count == 0)
+            {
+                DeleteImage(ImageName);
+            }
+            return true;
+        }
+        return false;
+    }
+
+    bool GameInstance::DeleteImage(const MString& ImageName)
+    {
+        const auto it = Textures.find(ImageName);
+        if (it == Textures.end())
+            return false;
+
+        // Destroy Vulkan image and free memory
+        const auto& texture = it->second.TextureHandle;
+        if (texture.image != VK_NULL_HANDLE)
+        {
+            vkDestroyImage(Setup->device, texture.image, nullptr);
+        }
+        if (texture.memory != VK_NULL_HANDLE)
+        {
+            vkFreeMemory(Setup->device, texture.memory, nullptr);
+        }
+        // Optionally destroy image view and sampler if present
+        if (texture.ImageView != VK_NULL_HANDLE)
+        {
+            vkDestroyImageView(Setup->device, texture.ImageView, nullptr);
+        }
+        if (texture.Sampler != VK_NULL_HANDLE)
+        {
+            vkDestroySampler(Setup->device, texture.Sampler, nullptr);
+        }
+
+        M_LOGGER(Logger::LogGraphics, Logger::Info, "Deleting image: " + ImageName);
+        Textures.erase(it);
+        return true;
     }
 
     bool GameInstance::AddWindow(MWindow& newWindow)

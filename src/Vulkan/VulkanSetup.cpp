@@ -234,7 +234,7 @@ namespace MillerInc::GPU
         // Get ImGui texture ID
         VkDescriptorSet TextureID = ImGui_ImplVulkan_AddTexture(sampler, imageView, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
-        return { textureImage, textureImageMemory, TextureID, {(float)texWidth, (float)texHeight} };
+        return { textureImage, textureImageMemory, TextureID, {(float)texWidth, (float)texHeight}, imageView, sampler };
     }
 
     // Add these helper functions in your VulkanSetup class (private):

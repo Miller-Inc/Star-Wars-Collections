@@ -23,17 +23,24 @@ namespace MillerInc::GUI
     void MainWindow::Init()
     {
         WindowBase::Init();
-
+        Open();
     }
 
     void MainWindow::Init(const MString& WindowName, MillerInc::Game::GameInstance* GameInstance)
     {
         WindowBase::Init(WindowName, GameInstance);
+        Open();
     }
 
     void MainWindow::Init(MillerInc::Game::GameInstance* GameInstance)
     {
         WindowBase::Init(GameInstance);
+        Open();
+    }
+
+    void MainWindow::Open()
+    {
+        WindowBase::Open();
         if (mGameInstance)
         {
             MImage* opening = mGameInstance->GetImage("Opening Image");
@@ -49,11 +56,6 @@ namespace MillerInc::GUI
         {
             M_LOGGER(Logger::LogCore, Logger::Warning, "GameInstance is null. Cannot load default images.");
         }
-    }
-
-    void MainWindow::Open()
-    {
-        WindowBase::Open();
     }
 
     void MainWindow::Draw()
@@ -130,6 +132,20 @@ namespace MillerInc::GUI
     void MainWindow::Close()
     {
         WindowBase::Close();
+        if (mGameInstance)
+        {
+            for (const auto& [name, image] : Textures)
+            {
+                if (image)
+                {
+                    mGameInstance->RemoveImage(name);
+                }
+            }
+            Textures.clear();
+        } else
+        {
+            M_LOGGER(Logger::LogCore, Logger::Warning, "GameInstance is null. Cannot unload images.");
+        }
     }
 
     void MainWindow::OpenSettings()

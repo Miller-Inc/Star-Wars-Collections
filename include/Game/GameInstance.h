@@ -44,6 +44,7 @@ namespace MillerInc::Game
         MImage* GetImage(const MString& ImageName); // Retrieve an image from the texture map
         MImage* OpenGetImage(const MString& PathToImage, const MString& ImageName, const MVector2& Position, const MSize& Scale = {1.0f, 1.0f});
         bool RemoveImage(const MString& ImageName);
+        bool DeleteImage(const MString& ImageName);
 
         bool AddWindow(MWindow& newWindow); // Add a new window to the game instance
 

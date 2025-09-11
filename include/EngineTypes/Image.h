@@ -16,5 +16,6 @@ namespace MillerInc
         MillerInc::MSize Size{}; // Size of the image
         MillerInc::MVector2 Position{}; // Position of the image
         MillerInc::MVector2 Scale{ 1.0f, 1.0f}; // Scale of the image
+        int32_t ref_count = 0; // Reference count for shared usage
     } MImage;
 }
