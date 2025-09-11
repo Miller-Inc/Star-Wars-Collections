@@ -22,12 +22,10 @@ namespace MillerInc::GUI
         if (mGameInstance)
         {
             mGameInstance->OpenImage("Resources/Textures/palm_trees.png",
-                "Palm Tree", {50, 50}, {1.0f, 1.0f});
+                "Palm Tree", {5, 50}, {0.05f, 0.05f});
             if (MImage* image = mGameInstance->GetImage("Palm Tree"))
             {
-                const bool contain = !Textures.contains(image->Name);
                 AddImage(image);
-
             }
         }
         else
@@ -52,17 +50,18 @@ namespace MillerInc::GUI
 
     void SW_Window::TestWindow()
     {
-        ImGui::Begin(Name.c_str());
-
-        // Images are last due to cursor movement
-        for (const auto& [name, image] : Textures)
+        if (ImGui::Begin(Name.c_str()))
         {
-            ImGui::SetCursorPos({image->Position.x, image->Position.y});
-            ImGui::Text("Image Name: %s", name.c_str());
-            ImGui::Image(image->TextureHandle.textureId, ImVec2(image->Size.x * image->Scale.x, image->Size.y * image->Scale.y));
-            ImGui::Separator();
+            // Images are last due to cursor movement
+            for (const auto& [name, image] : Textures)
+            {
+                ImGui::SetCursorPos({image->Position.x, image->Position.y});
+                ImGui::Text("Image Name: %s", name.c_str());
+                ImGui::Image(image->TextureHandle.textureId, ImVec2(image->Size.x * image->Scale.x, image->Size.y * image->Scale.y));
+                ImGui::Separator();
+            }
+            ImGui::End();
         }
-        ImGui::End();
     }
 
     void SW_Window::AddImage(MImage* image)

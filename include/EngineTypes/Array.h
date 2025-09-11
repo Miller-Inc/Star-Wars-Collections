@@ -8,6 +8,8 @@
 #include <cstring>
 #include <utility> // For std::move
 #include "EngineTypes/Logger.h"
+#include <vector>
+#include <algorithm> // For std::copy
 
 namespace MillerInc
 {
@@ -17,6 +19,74 @@ namespace MillerInc
     public:
         MArray() = default;
         ~MArray();
+        MArray(const MArray& other) // Copy constructor
+        {
+            length = other.length;
+            capacity = other.capacity;
+            if (capacity > 0)
+            {
+                data = new T[capacity];
+                std::copy(other.data, other.data + length, data);
+            } else
+            {
+                data = nullptr;
+            }
+        }
+        MArray(MArray&& other) noexcept // Move constructor
+        {
+            data = other.data;
+            length = other.length;
+            capacity = other.capacity;
+            other.data = nullptr;
+            other.length = 0;
+            other.capacity = 0;
+        }
+        MArray& operator=(const MArray& other) // Copy assignment
+        {
+            if (this != &other)
+            {
+                Clear();
+                length = other.length;
+                capacity = other.capacity;
+                if (capacity > 0)
+                {
+                    data = new T[capacity];
+                    std::copy(other.data, other.data + length, data);
+                } else
+                {
+                    data = nullptr;
+                }
+            }
+            return *this;
+        }
+        MArray& operator=(MArray&& other) noexcept // Move assignment
+        {
+            if (this != &other)
+            {
+                Clear();
+                data = other.data;
+                length = other.length;
+                capacity = other.capacity;
+                other.data = nullptr;
+                other.length = 0;
+                other.capacity = 0;
+            }
+            return *this;
+        }
+
+        MArray(std::vector<T> vec) // Construct from std::vector
+        {
+            length = vec.size();
+            capacity = length;
+            if (capacity > 0)
+            {
+                data = new T[capacity];
+                std::copy(vec.begin(), vec.end(), data);
+            } else
+            {
+                data = nullptr;
+            }
+        }
 
         [[nodiscard]] T& operator[](size_t index);
         MArray& operator+(const MArray& other) const; // Concatenate two arrays

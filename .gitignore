@@ -2,6 +2,8 @@ Windows-Debug/
 Windows-Release/
 WSL-Debug/
 WSL-Release/
+Windows-Debug-VS/
+Windows-Release-VS/
 .vscode/
 build/
 *.log

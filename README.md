@@ -56,3 +56,11 @@ Contributions are welcome! If you have suggestions for improvements
 or new features, feel free to open an issue or submit a pull request. 
 Please try to adhere to the structure that is already in place 
 within the project. 
+
+## Screen Shots
+-- -
+Opening Screen
+![Opening Screen](github-resources/opening-screen.png)
+-- -
+Game Mode Selection Screen
+![Game Mode Selection Screen](github-resources/selection-screen.png)
