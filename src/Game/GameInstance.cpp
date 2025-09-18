@@ -2,21 +2,6 @@
 // Created by James Miller on 9/4/2025.
 //
 
-// Dear ImGui: standalone example application for SDL3 + Vulkan
-
-// Learn about Dear ImGui:
-// - FAQ                  https://dearimgui.com/faq
-// - Getting Started      https://dearimgui.com/getting-started
-// - Documentation        https://dearimgui.com/docs (same as your local docs/ folder).
-// - Introduction, links and more at the top of imgui.cpp
-
-// Important note to the reader who wish to integrate imgui_impl_vulkan.cpp/.h in their own engine/app.
-// - Common ImGui_ImplVulkan_XXX functions and structures are used to interface with imgui_impl_vulkan.cpp/.h.
-//   You will use those if you want to use this rendering backend in your engine/app.
-// - Helper ImGui_ImplVulkanH_XXX functions and structures are only used by this example (main.cpp) and by
-//   the backend itself (imgui_impl_vulkan.cpp), but should PROBABLY NOT be used by your own engine/app code.
-// Read comments in imgui_impl_vulkan.h.
-
 #define DEMO false
 #define STB_IMAGE_IMPLEMENTATION
 #define WINDOW_TITLE "Star Wars Card Game"
@@ -200,6 +185,55 @@ namespace MillerInc::Game
         }
 
         return true;
+    }
+
+    bool GameInstance::LoadResources(const MString& WindowName)
+    {
+        // Load images from disk to textures (currently loads all the images, but this could be exchanged for lazy loading later)
+        //      This would need a way to unload images as well, so until then all images will be loaded since there aren't that many
+        for (const auto& data : mResourceLoader.ImageData | std::views::values)
+        {
+            if (data.WindowTags.empty() || std::find(data.WindowTags.begin(), data.WindowTags.end(), WindowName) == data.WindowTags.end())
+            {
+                continue; // Skip images that don't match the window tag
+            }
+
+            if (!OpenImage(data.Path, data.Name, data.Position, data.Scale))
+            {
+                M_LOGGER(Logger::LogCore, Logger::Warning, "Failed to load image: " + data.Path);
+            } else
+            {
+                M_LOGGER(Logger::LogCore, Logger::Info, "Loaded image: " + data.Path + " as '" + data.Name + "'");
+            }
+        }
+
+        return true;
+    }
+
+    bool GameInstance::LoadResources()
+    {
+        bool allSuccess = true;
+
+        // Load images from disk to textures (currently loads all the images, but this could be exchanged for lazy loading later)
+        //      This would need a way to unload images as well, so until then all images will be loaded since there aren't that many
+        for (const auto& data : mResourceLoader.ImageData | std::views::values)
+        {
+            if (!OpenImage(data.Path, data.Name, data.Position, data.Scale))
+            {
+                M_LOGGER(Logger::LogCore, Logger::Warning, "Failed to load image: " + data.Path);
+                allSuccess = false;
+            } else
+            {
+                M_LOGGER(Logger::LogCore, Logger::Info, "Loaded image: " + data.Path + " as '" + data.Name + "'");
+            }
+        }
+
+        return allSuccess;
+    }
+
+    void GameInstance::PreWindowInit()
+    {
+        ParseResources();
     }
 
 
@@ -634,6 +668,8 @@ namespace MillerInc::Game
         Setup = (GPU::VulkanSetup*)malloc(sizeof(GPU::VulkanSetup));
         memcpy(Setup, &VulkanSetupParams, sizeof(GPU::VulkanSetup));
 
+        PreWindowInit();
+
         for (const auto &Window : Windows | std::views::values)
         {
             if (Window.InitCallback)
@@ -770,5 +806,10 @@ namespace MillerInc::Game
         free(Setup);
 
         return 0;
+    }
+
+    void GameInstance::ParseResources()
+    {
+        mResourceLoader.LoadResources(RESOURCE_RELATIVE_PATH);
     }
 }

@@ -69,13 +69,6 @@ int main(int argc, char** argv)
     return 0;
 #endif
 
-    MillerInc::ResourceLoader resourceLoader{};
-    if (!resourceLoader.LoadResources("Resources/resources.json"))
-    {
-        M_LOGGER(MillerInc::Logger::LogCore, MillerInc::Logger::Error, "Failed to load resources.");
-        return -1;
-    }
-
     MillerInc::Game::GameInstance gameInstance{};
 
     MillerInc::GUI::MainWindow window{};
@@ -88,9 +81,9 @@ int main(int argc, char** argv)
         {
             window.Draw();
         }},
-        {[&window, &resourceLoader](MillerInc::Game::GameInstance* GameInstance)
+        {[&window](MillerInc::Game::GameInstance* GameInstance)
         {
-            resourceLoader.OpenResources(GameInstance, std::vector<std::string>{"MainWindow"});
+            // resourceLoader.OpenResources(GameInstance, std::vector<std::string>{"MainWindow"});
             window.Init(GameInstance);
         }},
         nullptr,

@@ -34,5 +34,9 @@ namespace MillerInc::GUI
         void OpenMultiplayer();
         void ExitGame();
 
+    private:
+        void SelectionWindow();
+        void OpeningWindow();
+
     };
 }

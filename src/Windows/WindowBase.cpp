@@ -3,26 +3,31 @@
 //
 
 #include "Windows/WindowBase.h"
-#include "EngineTypes/Logger.h"
 
 namespace MillerInc::GUI
 {
     void WindowBase::Init()
     {
         isOpen = true;
+
+        if (mGameInstance != nullptr)
+        {
+            M_LOGGER(Logger::LogCore, Logger::Info, "Loading resources for window: " + Name);
+            mGameInstance->LoadResources(Name);
+        }
     }
 
     void WindowBase::Init(const MString& WindowName, MillerInc::Game::GameInstance* GameInstance)
     {
         Name = WindowName;
-        isOpen = true;
         this->mGameInstance = GameInstance;
+        Init();
     }
 
     void WindowBase::Init(MillerInc::Game::GameInstance* GameInstance)
     {
-        isOpen = true;
         mGameInstance = GameInstance;
+        Init();
     }
 
     void WindowBase::Open()

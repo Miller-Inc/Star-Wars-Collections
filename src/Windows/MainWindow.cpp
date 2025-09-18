@@ -71,54 +71,10 @@ namespace MillerInc::GUI
             {
 
             case Game::WindowType::OpeningWindow:
-                if (Textures.contains("Opening Image"))
-                {
-                    auto image = Textures["Opening Image"];
-                    ImGui::Image(image->TextureHandle.textureId, {image->Size.x, image->Size.y});
-                }
-
-                ImGui::SetCursorPos(ImVec2(515,680));
-                if (ImGui::Button("Press/Tap to Start", ImVec2(250,50)))
-                {
-                    Type = Game::WindowType::SelectionWindow;
-                }
+                OpeningWindow();
                 break;
             case Game::WindowType::SelectionWindow:
-                ImGui::SetCursorPos(ImVec2(590,100));
-                if (ImGui::Button("Story Mode", ImVec2(100,50)))
-                {
-                    OpenStoryMode();
-                }
-
-                ImGui::SetCursorPos(ImVec2(590,200));
-                if (ImGui::Button("Free Play", ImVec2(100,50)))
-                {
-                    OpenFreePlay();
-                }
-
-                ImGui::SetCursorPos(ImVec2(590,300));
-                if (ImGui::Button("Multiplayer", ImVec2(100,50)))
-                {
-                    OpenMultiplayer();
-                }
-
-                ImGui::SetCursorPos(ImVec2(590,400));
-                if (ImGui::Button("Training", ImVec2(100,50)))
-                {
-                    OpenTraining();
-                }
-
-                ImGui::SetCursorPos(ImVec2(590,500));
-                if (ImGui::Button("Settings", ImVec2(100,50)))
-                {
-                    OpenSettings();
-                }
-
-                ImGui::SetCursorPos(ImVec2(590,600));
-                if (ImGui::Button("Exit Game", ImVec2(100,50)))
-                {
-                    ExitGame();
-                }
+                SelectionWindow();
                 break;
             default:
                     break;
@@ -155,6 +111,7 @@ namespace MillerInc::GUI
 
     void MainWindow::OpenTraining()
     {
+
     }
 
     void MainWindow::OpenStoryMode()
@@ -173,5 +130,59 @@ namespace MillerInc::GUI
     void MainWindow::ExitGame()
     {
         Type = Game::WindowType::OpeningWindow;
+    }
+
+    void MainWindow::OpeningWindow()
+    {
+        if (Textures.contains("Opening Image"))
+        {
+            auto image = Textures["Opening Image"];
+            ImGui::Image(image->TextureHandle.textureId, {image->Size.x, image->Size.y});
+        }
+
+        ImGui::SetCursorPos(ImVec2(515,680));
+        if (ImGui::Button("Press/Tap to Start", ImVec2(250,50)))
+        {
+            Type = Game::WindowType::SelectionWindow;
+        }
+    }
+
+    void MainWindow::SelectionWindow()
+    {
+        ImGui::SetCursorPos(ImVec2(590,100));
+        if (ImGui::Button("Story Mode", ImVec2(100,50)))
+        {
+            OpenStoryMode();
+        }
+
+        ImGui::SetCursorPos(ImVec2(590,200));
+        if (ImGui::Button("Free Play", ImVec2(100,50)))
+        {
+            OpenFreePlay();
+        }
+
+        ImGui::SetCursorPos(ImVec2(590,300));
+        if (ImGui::Button("Multiplayer", ImVec2(100,50)))
+        {
+            OpenMultiplayer();
+        }
+
+        ImGui::SetCursorPos(ImVec2(590,400));
+        if (ImGui::Button("Training", ImVec2(100,50)))
+        {
+            OpenTraining();
+        }
+
+        ImGui::SetCursorPos(ImVec2(590,500));
+        if (ImGui::Button("Settings", ImVec2(100,50)))
+        {
+            OpenSettings();
+        }
+
+        ImGui::SetCursorPos(ImVec2(590,600));
+        if (ImGui::Button("Exit Game", ImVec2(100,50)))
+        {
+            ExitGame();
+        }
     }
 }

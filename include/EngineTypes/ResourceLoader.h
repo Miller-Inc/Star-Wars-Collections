@@ -6,9 +6,7 @@
 #include "EngineTypes/String.h"
 #include "EngineTypes/Image.h"
 #include <map>
-
 #include "Array.h"
-#include "Game/GameInstance.h"
 
 namespace MillerInc
 {
@@ -31,7 +29,5 @@ namespace MillerInc
 
         std::map<MString, MImageLoadData> ImageData{}; // Map to hold image load data with string keys
         bool LoadResources(const MString& FilePath);
-        bool OpenResources(Game::GameInstance* GameInstance);
-        void OpenResources(Game::GameInstance* GameInstance, const MArray<MString>& Tags);
     };
 }
