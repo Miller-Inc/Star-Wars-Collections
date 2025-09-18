@@ -44,6 +44,17 @@
           [
 
           ]
+    },
+    {
+      "path": "Resources/Textures/Backgrounds/stars.png",
+      "name": "Stars",
+      "position": { "x": 0, "y": 0 },
+      "size": { "x": 256, "y": 256 },
+      "scale": { "x": 1, "y": 1 },
+      "pages": [
+        "Main Window",
+        "Loading Window"
+      ]
     }
   ]
 }

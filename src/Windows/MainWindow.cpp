@@ -11,7 +11,7 @@ namespace MillerInc::GUI
     MainWindow::MainWindow() : WindowBase()
     {
         Name = "Main Window";
-        isOpen = true;
+        isOpen = false;
     }
 
     MainWindow::MainWindow(const MainWindow& other) : WindowBase(other)
@@ -20,42 +20,9 @@ namespace MillerInc::GUI
         isOpen = other.isOpen;
     }
 
-    void MainWindow::Init()
-    {
-        WindowBase::Init();
-        Open();
-    }
-
-    void MainWindow::Init(const MString& WindowName, MillerInc::Game::GameInstance* GameInstance)
-    {
-        WindowBase::Init(WindowName, GameInstance);
-        Open();
-    }
-
-    void MainWindow::Init(MillerInc::Game::GameInstance* GameInstance)
-    {
-        WindowBase::Init(GameInstance);
-        Open();
-    }
-
     void MainWindow::Open()
     {
         WindowBase::Open();
-        if (mGameInstance)
-        {
-            MImage* opening = mGameInstance->GetImage("Opening Image");
-            if (opening)
-            {
-                Textures.emplace("Opening Image", opening);
-            } else
-            {
-                M_LOGGER(Logger::LogCore, Logger::Warning, "Failed to load 'opening.png'.");
-            }
-        }
-        else
-        {
-            M_LOGGER(Logger::LogCore, Logger::Warning, "GameInstance is null. Cannot load default images.");
-        }
     }
 
     void MainWindow::Draw()
@@ -76,8 +43,12 @@ namespace MillerInc::GUI
             case Game::WindowType::SelectionWindow:
                 SelectionWindow();
                 break;
+            case Game::WindowType::LoadingWindow:
+                LoadingWindow();
+                break;
             default:
-                    break;
+                OpeningWindow();
+                break;
             }
 
             ImGui::End();
@@ -136,7 +107,7 @@ namespace MillerInc::GUI
     {
         if (Textures.contains("Opening Image"))
         {
-            auto image = Textures["Opening Image"];
+            const auto& image = Textures["Opening Image"];
             ImGui::Image(image->TextureHandle.textureId, {image->Size.x, image->Size.y});
         }
 
@@ -185,4 +156,15 @@ namespace MillerInc::GUI
             ExitGame();
         }
     }
+
+    void MainWindow::LoadingWindow()
+    {
+        if (Textures.contains("Stars"))
+        {
+            ImGui::SetCursorPos(ImVec2(0,0));
+            const auto& image = Textures["Stars"];
+            ImGui::Image(image->TextureHandle.textureId, {image->Size.x, image->Size.y - 8});
+        }
+    }
+
 }

@@ -12,9 +12,12 @@ namespace MillerInc::GUI
 
         if (mGameInstance != nullptr)
         {
-            M_LOGGER(Logger::LogCore, Logger::Info, "Loading resources for window: " + Name);
-            mGameInstance->LoadResources(Name);
+            Textures = mGameInstance->LoadResources(Name);
+        } else {
+            M_LOGGER(Logger::LogCore, Logger::Warning, "GameInstance is null. Cannot load resources for window: " + Name);
         }
+
+        Open(); // Open the window by default after initialization
     }
 
     void WindowBase::Init(const MString& WindowName, MillerInc::Game::GameInstance* GameInstance)

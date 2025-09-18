@@ -32,6 +32,5 @@ namespace MillerInc::GUI
         WindowBase() = default;
         [[nodiscard]] MString GetName() const { return Name; }
 
-
     };
 }

@@ -17,9 +17,6 @@ namespace MillerInc::GUI
         MainWindow(const MainWindow& other);
         ~MainWindow() override = default;
 
-        void Init() override;
-        void Init(const MString& WindowName, MillerInc::Game::GameInstance* GameInstance) override;
-        void Init(MillerInc::Game::GameInstance* GameInstance) override;
         void Open() override;
         void Draw() override;
         void Close() override;
@@ -37,6 +34,7 @@ namespace MillerInc::GUI
     private:
         void SelectionWindow();
         void OpeningWindow();
+        void LoadingWindow();
 
     };
 }

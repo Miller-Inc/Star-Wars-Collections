@@ -12,5 +12,6 @@ namespace MillerInc::Game
         SelectionWindow = 1,
         BattleWindow = 2,
         PauseWindow = 3,
+        LoadingWindow = 4,
     };
 }

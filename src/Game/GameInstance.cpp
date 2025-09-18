@@ -187,8 +187,10 @@ namespace MillerInc::Game
         return true;
     }
 
-    bool GameInstance::LoadResources(const MString& WindowName)
+    std::map<MString, MImage*> GameInstance::LoadResources(const MString& WindowName)
     {
+        std::map<MString, MImage*> Images;
+
         // Load images from disk to textures (currently loads all the images, but this could be exchanged for lazy loading later)
         //      This would need a way to unload images as well, so until then all images will be loaded since there aren't that many
         for (const auto& data : mResourceLoader.ImageData | std::views::values)
@@ -204,10 +206,11 @@ namespace MillerInc::Game
             } else
             {
                 M_LOGGER(Logger::LogCore, Logger::Info, "Loaded image: " + data.Path + " as '" + data.Name + "'");
+                Images.emplace(data.Name, &Textures[data.Name]);
             }
         }
 
-        return true;
+        return Images;
     }
 
     bool GameInstance::LoadResources()

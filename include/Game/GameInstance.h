@@ -49,7 +49,7 @@ namespace MillerInc::Game
 
         bool AddWindow(MWindow& newWindow); // Add a new window to the game instance
 
-        bool LoadResources(const MString& WindowName);
+        std::map<MString, MImage*> LoadResources(const MString& WindowName);
         bool LoadResources();
 
     protected:
