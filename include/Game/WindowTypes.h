@@ -13,5 +13,8 @@ namespace MillerInc::Game
         BattleWindow = 2,
         PauseWindow = 3,
         LoadingWindow = 4,
+        NetworkWindow = 5,
+        NetworkHostSetupWindow = 6,
+        NetworkJoinSetupWindow = 7,
     };
 }

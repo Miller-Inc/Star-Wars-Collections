@@ -35,6 +35,11 @@ namespace MillerInc::GUI
         void SelectionWindow();
         void OpeningWindow();
         void LoadingWindow();
+        void OpenNetworkWindow();
+        void JoinGameWindow();
+
+        bool bNetworkWindowOpened = true;
+        bool bNetworkConnecting = false;
 
     };
 }

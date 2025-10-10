@@ -43,6 +43,8 @@ set(STAR_WARS_CARD_GAME_HEADERS
         include/Game/WindowTypes.h
         include/EngineTypes/ResourceLoader.h
         src/EngineTypes/ResourceLoader.cpp
+        src/EngineTypes/InputValidation.cpp
+        include/EngineTypes/InputValidation.h
 )
 
 

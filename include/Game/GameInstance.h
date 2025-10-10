@@ -10,6 +10,7 @@
 #include "EngineTypes/String.h"
 #include "EngineTypes/Vector.h"
 #include "EngineTypes/ResourceLoader.h"
+#include "Network/NetworkManager.h"
 
 #define RESOURCE_RELATIVE_PATH "Resources/resources.json"
 
@@ -36,24 +37,57 @@ namespace MillerInc::Game
         GameInstance() = default;
         ~GameInstance() = default;
 
+        /// Prepare and run the game instance
         void Init(); // Initialize the game instance
 
+        /// Update the game instance logic, called every frame
         void Tick(float deltaTime);
+
+        /// Render the game instance, called every frame
         void Render(); // Render the game instance
 
+        /// Texture Management
+
+        /// Open an image and add it to the texture map
         bool OpenImage(const MString& PathToImage, const MString& ImageName, const MVector2& Position, const MSize& Scale = {1.0f, 1.0f}); // Add an image to the texture map
+
+        /// Get an image from the texture map
         MImage* GetImage(const MString& ImageName); // Retrieve an image from the texture map
+
+        /// Open an image if it doesn't exist, otherwise return the existing image
         MImage* OpenGetImage(const MString& PathToImage, const MString& ImageName, const MVector2& Position, const MSize& Scale = {1.0f, 1.0f});
+
+        /// Remove an image from the texture map
         bool RemoveImage(const MString& ImageName);
+
+        /// Delete an image from memory and the texture map
         bool DeleteImage(const MString& ImageName);
 
+        /// Window Management
+
+        /// Add a new window to the game instance
         bool AddWindow(MWindow& newWindow); // Add a new window to the game instance
 
+        /// Load resources for a specific window
         std::map<MString, MImage*> LoadResources(const MString& WindowName);
+
+        /// Load all resources
         bool LoadResources();
 
+        /// Network Management
+
+        /// Connect to a server
+        bool ConnectToServer(const MString& name, const MString& ip, int32_t port);
+
+        /// Return a reference to the network manager
+        Network::NetworkManager *GetNetworkManager() { return &mNetworkManager; }
+
     protected:
+        /// Pre-window initialization (called before any windows are created) (Called once)
         void PreWindowInit();
+
+        /// Cleanup resources (called on shutdown) (Called once)
+        void Cleanup();
 
     private:
         MVector2 WindowSize = {800, 600}; // Default window size
@@ -67,6 +101,9 @@ namespace MillerInc::Game
         ResourceLoader mResourceLoader{};
 
         void ParseResources();
+
+        /// Manage network connections
+        Network::NetworkManager mNetworkManager{};
 
     };
 }

@@ -234,11 +234,20 @@ namespace MillerInc::Game
         return allSuccess;
     }
 
+    bool GameInstance::ConnectToServer(const MString& serverName, const MString& ip, int32_t port)
+    {
+        return mNetworkManager.CreateNamedSocket(serverName, ip, port) != nullptr;
+    }
+
     void GameInstance::PreWindowInit()
     {
         ParseResources();
+        mNetworkManager.Init(); // Initialize the network manager
     }
 
+    /******************************************************************************
+     **************************** Vulkan Setup Code *******************************
+     ******************************************************************************/
 
     // Data
     static VkAllocationCallbacks*   g_Allocator = nullptr;
@@ -434,7 +443,7 @@ namespace MillerInc::Game
 
         // Create SwapChain, RenderPass, Framebuffer, etc.
         IM_ASSERT(g_MinImageCount >= 2);
-        ImGui_ImplVulkanH_CreateOrResizeWindow(g_Instance, g_PhysicalDevice, g_Device, wd, g_QueueFamily, g_Allocator, width, height, g_MinImageCount);
+        ImGui_ImplVulkanH_CreateOrResizeWindow(g_Instance, g_PhysicalDevice, g_Device, wd, g_QueueFamily, g_Allocator, width, height, g_MinImageCount, 0);
     }
 
     static void CleanupVulkan()
@@ -543,6 +552,31 @@ namespace MillerInc::Game
         wd->SemaphoreIndex = (wd->SemaphoreIndex + 1) % wd->SemaphoreCount; // Now we can use the next set of semaphores
     }
 
+    /******************************************************************************
+     ************************** End Vulkan Setup Code *****************************
+     ******************************************************************************/
+
+    void GameInstance::Cleanup()
+    {
+        static bool cleaned = false;
+        if (cleaned)
+            return;
+
+        cleaned = true;
+
+        mNetworkManager.Cleanup(); // Cleanup network resources
+
+        ImGui_ImplVulkan_Shutdown();
+        ImGui_ImplSDL3_Shutdown();
+        ImGui::DestroyContext();
+
+        CleanupVulkanWindow();
+        CleanupVulkan();
+        SDL_Quit();
+
+        free(Setup);
+    }
+
     int GameInstance::Program()
     {
         // Setup SDL
@@ -629,13 +663,14 @@ namespace MillerInc::Game
         init_info.Queue = g_Queue;
         init_info.PipelineCache = g_PipelineCache;
         init_info.DescriptorPool = g_DescriptorPool;
-        init_info.RenderPass = wd->RenderPass;
-        init_info.Subpass = 0;
+        init_info.PipelineInfoMain.RenderPass = wd->RenderPass;
+        init_info.PipelineInfoMain.Subpass = 0;
         init_info.MinImageCount = g_MinImageCount;
         init_info.ImageCount = wd->ImageCount;
-        init_info.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
+        init_info.PipelineInfoMain.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
         init_info.Allocator = g_Allocator;
         init_info.CheckVkResultFn = check_vk_result;
+
         ImGui_ImplVulkan_Init(&init_info);
 
         // Load Fonts
@@ -716,7 +751,7 @@ namespace MillerInc::Game
             if (fb_width > 0 && fb_height > 0 && (g_SwapChainRebuild || g_MainWindowData.Width != fb_width || g_MainWindowData.Height != fb_height))
             {
                 ImGui_ImplVulkan_SetMinImageCount(g_MinImageCount);
-                ImGui_ImplVulkanH_CreateOrResizeWindow(g_Instance, g_PhysicalDevice, g_Device, &g_MainWindowData, g_QueueFamily, g_Allocator, fb_width, fb_height, g_MinImageCount);
+                ImGui_ImplVulkanH_CreateOrResizeWindow(g_Instance, g_PhysicalDevice, g_Device, wd, g_QueueFamily, g_Allocator, fb_height, fb_height, g_MinImageCount, 0);
                 g_MainWindowData.FrameIndex = 0;
                 g_SwapChainRebuild = false;
             }
@@ -792,21 +827,17 @@ namespace MillerInc::Game
                 FramePresent(wd);
         }
 
-        // Cleanup
+
         // [If using SDL_MAIN_USE_CALLBACKS: all code below would likely be your SDL_AppQuit() function]
         err = vkDeviceWaitIdle(g_Device);
         check_vk_result(err);
-        ImGui_ImplVulkan_Shutdown();
-        ImGui_ImplSDL3_Shutdown();
-        ImGui::DestroyContext();
 
-        CleanupVulkanWindow();
-        CleanupVulkan();
+        // Cleanup
+        Cleanup();
 
         SDL_DestroyWindow(window);
-        SDL_Quit();
 
-        free(Setup);
+
 
         return 0;
     }

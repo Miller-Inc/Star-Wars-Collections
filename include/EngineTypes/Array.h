@@ -104,6 +104,8 @@ namespace MillerInc
         const T* begin() const { return data; }
         const T* end() const { return data + length; }
 
+        size_t Find(const T& element) const;
+
     private:
         T* data = nullptr;
         size_t length = 0;
@@ -243,4 +245,16 @@ namespace MillerInc
         *this += other;
     }
 
+    template <typename T>
+    size_t MArray<T>::Find(const T& element) const
+    {
+        if (length == 0)
+            return -1;
+        for (size_t i = 0; i < length; i++)
+        {
+            if (element == data[i])
+                return i;
+        }
+        return -1;
+    }
 }
