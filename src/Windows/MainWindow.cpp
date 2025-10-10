@@ -109,6 +109,10 @@ namespace MillerInc::GUI
     void MainWindow::ExitGame()
     {
         Type = Game::WindowType::OpeningWindow;
+        if (mGameInstance)
+        {
+            mGameInstance->StopMainLoop();
+        }
     }
 
     void MainWindow::OpeningWindow()

@@ -621,7 +621,7 @@ namespace MillerInc::Game
         ImGui_ImplVulkanH_Window* wd = &g_MainWindowData;
         SetupVulkanWindow(wd, surface, w, h);
         SDL_SetWindowPosition(window, SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED);
-        SDL_ShowWindow(window);
+        // SDL_ShowWindow(window);
 
         // Setup Dear ImGui context
         IMGUI_CHECKVERSION();
@@ -718,7 +718,7 @@ namespace MillerInc::Game
 
         // Main loop
         bool done = false;
-        while (!done)
+        while (!done && RunLoop)
         {
             Tick(io.DeltaTime); // Call Tick to update game logic
 

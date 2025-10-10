@@ -82,6 +82,9 @@ namespace MillerInc::Game
         /// Return a reference to the network manager
         Network::NetworkManager *GetNetworkManager() { return &mNetworkManager; }
 
+        /// Exits the main loop and shuts down the game instance
+        void StopMainLoop() { RunLoop = false; }
+
     protected:
         /// Pre-window initialization (called before any windows are created) (Called once)
         void PreWindowInit();
@@ -97,6 +100,7 @@ namespace MillerInc::Game
         GPU::VulkanSetup *Setup = nullptr; // Pointer to Vulkan setup
         int Program(); // Main program loop
         bool IsRunning = false;
+        bool RunLoop = true;
 
         ResourceLoader mResourceLoader{};
 

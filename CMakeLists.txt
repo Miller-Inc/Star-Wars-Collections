@@ -36,6 +36,8 @@ set(STAR_WARS_CARD_GAME_SOURCES
         src/Windows/NetworkPlayWindow.cpp
         src/Windows/MainWindow.cpp
         src/Windows/WindowBase.cpp
+        src/EngineTypes/ResourceLoader.cpp
+        src/EngineTypes/InputValidation.cpp
 )
 
 set(STAR_WARS_CARD_GAME_HEADERS
@@ -54,14 +56,17 @@ set(STAR_WARS_CARD_GAME_HEADERS
         include/Windows/MainWindow.h
         include/Game/WindowTypes.h
         include/EngineTypes/ResourceLoader.h
-        src/EngineTypes/ResourceLoader.cpp
-        src/EngineTypes/InputValidation.cpp
         include/EngineTypes/InputValidation.h
 )
 
+if (WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Release")
+    set(EXE_FLAGS WIN32)
+    message(STATUS "Building for Windows Release with flags: ${EXE_FLAGS}")
+else()
+    set(EXE_FLAGS "")
+endif()
 
-
-add_executable(StarWarsCardGame main.cpp
+add_executable(StarWarsCardGame ${EXE_FLAGS} main.cpp
         ${STAR_WARS_CARD_GAME_HEADERS}
         ${STAR_WARS_CARD_GAME_SOURCES}
         ${APP_ICON_RESOURCE}
@@ -116,9 +121,16 @@ add_custom_command(TARGET StarWarsCardGame POST_BUILD
         $<TARGET_FILE_DIR:StarWarsCardGame>/Resources
 )
 
-if (UNIX)
-    # Install the executable
+if(UNIX)
     install(TARGETS StarWarsCardGame DESTINATION bin)
+    # Create a symlink 'swcg' -> 'StarWarsCardGame' in the install bin dir
+    install(CODE "
+        execute_process(
+            COMMAND \${CMAKE_COMMAND} -E create_symlink
+                StarWarsCardGame
+                \"\$ENV{DESTDIR}\${CMAKE_INSTALL_PREFIX}/bin/swcg\"
+        )
+    ")
 
     # Install the icons
     install(
