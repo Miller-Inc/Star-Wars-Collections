@@ -382,8 +382,8 @@ MMessage MillerInc::Network::NetworkManager::Receive(SocketPtr socket, size_t le
         M_LOGGER(Logger::LogNetwork, Logger::Error, "Socket is null, cannot receive data.");
         return {nullptr, 0};
     }
+    void* buffer = malloc(len);
 
-    char buffer[len]; // Buffer to hold received data
     int bytesReceived = Receive(socket, buffer, len);
     if (bytesReceived > 0)
     {
