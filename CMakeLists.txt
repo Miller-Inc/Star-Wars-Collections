@@ -8,6 +8,18 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
 
 find_package(Vulkan REQUIRED)
 
+# Icon Handling
+if (WIN32)
+    set(APP_ICON_RESOURCE_WINDOWS "${CMAKE_SOURCE_DIR}/Resources/ico/Windows/app.rc")
+    set(APP_ICON_RESOURCE ${APP_ICON_RESOURCE_WINDOWS})
+    add_definitions(-DAPP_ICON_RESOURCE="${APP_ICON_RESOURCE}")
+    message(STATUS "App icon resource set for Windows: ${APP_ICON_RESOURCE}")
+elseif(UNIX)
+    set(APP_ICON_RESOURCE "")  # No icon resource for Linux in this example
+else()
+    set(APP_ICON_RESOURCE "")  # No icon resource for other platforms
+endif()
+
 
 # This assumes the SDL source is available in the third_party/sdl3 directory.
 add_subdirectory(third_party/sdl3 EXCLUDE_FROM_ALL)
@@ -52,6 +64,7 @@ set(STAR_WARS_CARD_GAME_HEADERS
 add_executable(StarWarsCardGame main.cpp
         ${STAR_WARS_CARD_GAME_HEADERS}
         ${STAR_WARS_CARD_GAME_SOURCES}
+        ${APP_ICON_RESOURCE}
 )
 
 # This condition checks if the current platform is Windows.
@@ -102,3 +115,20 @@ add_custom_command(TARGET StarWarsCardGame POST_BUILD
         ${CMAKE_SOURCE_DIR}/Resources
         $<TARGET_FILE_DIR:StarWarsCardGame>/Resources
 )
+
+if (UNIX)
+    # Install the executable
+    install(TARGETS StarWarsCardGame DESTINATION bin)
+
+    # Install the icons
+    install(
+            DIRECTORY Resources/ico/Linux/icons/
+            DESTINATION share/icons/hicolor
+    )
+
+    # Install the .desktop file
+    install(
+            FILES Resources/ico/Linux/StarWarsCardGame.desktop
+            DESTINATION share/applications
+    )
+endif()
