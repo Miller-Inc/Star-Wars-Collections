@@ -17,11 +17,14 @@ This project is not only a tribute to the beloved game, but also a project for
 ## Dependencies (for building)
 - CMake
 - SDL3 (included)
+- SDL3 Net (included)
 - imgui (included)
 - Vulkan SDK
+- Nlohamann JSON (included)
+- stb_image (included)
 
 ## Dependencies (for running)
-- Vulkan capable GPU and drivers
+- Vulkan capable GPU and drivers (see bottom of README for more details)
 
 ## Building
 1. Clone the repository:
@@ -50,6 +53,46 @@ contact me at jwmiller006@outlook.com and I can provide additional resources
 and guidance on how to get started with game development and programming. 
 Please provide some information about your current skill level 
 and what you hope to achieve.
+
+### Vulkan Installation Instructions
+-- -
+I am aware that as this project is meant for learning, some developers may not have
+    had experience with Vulkan. Here are some resources to help you get started:
+- [Vulkan Official Website](https://www.khronos.org/vulkan/)
+- [Vulkan Tutorial](https://vulkan-tutorial.com/)
+- [Vulkan SDK Download](https://vulkan.lunarg.com/sdk/home)
+
+#### SDK Installation
+##### Windows
+1. Download the Vulkan SDK from the [LunarG website](https://vulkan.lunarg.com/sdk/home).
+2. Run the installer and follow the on-screen instructions.
+3. Set the `VULKAN_SDK` environment variable to point to the SDK installation directory.
+4. Add the `bin` directory of the SDK to your system's `PATH` environment variable.
+5. Restart your computer to apply the changes.
+
+##### Linux (Ubuntu)
+1. Install Prerequisites:
+    ```bash
+    sudo apt-get update
+    sudo apt install xz-utils
+    sudo apt-get install libglm-dev cmake libxcb-dri3-0 libxcb-present0 libpciaccess0 \
+    libpng-dev libxcb-keysyms1-dev libxcb-dri3-dev libx11-dev g++ gcc \
+    libwayland-dev libxrandr-dev libxcb-randr0-dev libxcb-ewmh-dev \
+    git python-is-python3 bison libx11-xcb-dev liblz4-dev libzstd-dev \
+    ocaml-core ninja-build pkg-config libxml2-dev wayland-protocols python3-jsonschema \
+    clang-format qtbase5-dev qt6-base-dev
+    ```
+2. Install Vulkan SDK: 
+    ``` bash
+    sudo apt install vulkan-utils vulkan-validationlayers libvulkan-dev -y
+    ```
+3. Verify Installation:
+    ```bash
+    # Check Vulkan installation (Option 1)
+    vulkaninfo | less
+    # Check Vulkan installation (Option 2)
+    vkcube
+    ```
 
 ## Contributing
 Contributions are welcome! If you have suggestions for improvements 
