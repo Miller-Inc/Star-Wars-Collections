@@ -38,10 +38,10 @@ jobs:
           path: test_results.txt
 
       - name: Build Release
-        run: cmake --build release --config Release --target StarWarsCardGame -- -j 14
+        run: cmake --build build --config Release --target StarWarsCardGame -- -j 14
 
       - name: Compress Build
-        run: tar -czvf StarWarsCardGame.tar.gz -C Release .
+        run: tar -czvf StarWarsCardGame.tar.gz -C build .
 
       - name: Upload Release build
         uses: actions/upload-artifact@v4
