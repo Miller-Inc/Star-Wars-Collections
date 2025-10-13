@@ -84,6 +84,10 @@ add_executable(StarWarsCardGame ${EXE_FLAGS} main.cpp
 # Link the executable target to the library target
 target_link_libraries(StarWarsCardGame PRIVATE StarWarsCardGameLib)
 
+set_target_properties(StarWarsCardGame PROPERTIES
+        RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+)
+
 # This condition checks if the current platform is Windows.
 if(WIN32)
     # The commands inside this block will only be executed on Windows.
