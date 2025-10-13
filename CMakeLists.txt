@@ -66,11 +66,23 @@ else()
     set(EXE_FLAGS "")
 endif()
 
-add_executable(StarWarsCardGame ${EXE_FLAGS} main.cpp
+# Library target for the game logic and core functionality
+add_library(StarWarsCardGameLib STATIC
         ${STAR_WARS_CARD_GAME_HEADERS}
         ${STAR_WARS_CARD_GAME_SOURCES}
         ${APP_ICON_RESOURCE}
 )
+
+target_link_libraries(StarWarsCardGameLib PUBLIC SDL3::SDL3 SDL3_net::SDL3_net Vulkan::Vulkan)
+target_link_libraries(StarWarsCardGameLib PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(StarWarsCardGameLib PUBLIC ${NLOHMANN_JSON_TARGET_NAME})
+
+
+add_executable(StarWarsCardGame ${EXE_FLAGS} main.cpp
+        ${APP_ICON_RESOURCE}
+)
+# Link the executable target to the library target
+target_link_libraries(StarWarsCardGame PRIVATE StarWarsCardGameLib)
 
 # This condition checks if the current platform is Windows.
 if(WIN32)
@@ -80,6 +92,7 @@ if(WIN32)
     # Check if the Visual Studio compiler is being used.
     if(MSVC)
         target_compile_options(StarWarsCardGame PRIVATE /MT)
+        target_compile_options(StarWarsCardGameLib PRIVATE /MT)
         # Check if the MinGW compiler is being used.
     elseif(MINGW)
         # Pass the static linking flags for MinGW.
@@ -91,6 +104,13 @@ if(WIN32)
     endif()
 endif()
 
+target_include_directories(StarWarsCardGameLib PRIVATE imgui third_party/imgui)
+target_include_directories(StarWarsCardGameLib PRIVATE imgui third_party/imgui/backends)
+target_include_directories(StarWarsCardGameLib PRIVATE stb third_party/stb)
+target_include_directories(StarWarsCardGameLib PRIVATE SWCG include)
+target_include_directories(StarWarsCardGameLib PRIVATE third_party/imrad/include)
+target_include_directories(StarWarsCardGameLib PRIVATE third_party/json/include)
+
 target_include_directories(StarWarsCardGame PRIVATE imgui third_party/imgui)
 target_include_directories(StarWarsCardGame PRIVATE imgui third_party/imgui/backends)
 target_include_directories(StarWarsCardGame PRIVATE stb third_party/stb)
@@ -101,7 +121,7 @@ target_include_directories(StarWarsCardGame PRIVATE third_party/json/include)
 set(IMGUI_DIR third_party/imgui)
 set(IMGUI_BACKEND_DIR ${IMGUI_DIR}/backends)
 
-target_sources(StarWarsCardGame PRIVATE
+target_sources(StarWarsCardGameLib PRIVATE
         ${IMGUI_DIR}/imgui.cpp
         ${IMGUI_DIR}/imgui_draw.cpp
         ${IMGUI_DIR}/imgui_tables.cpp
@@ -111,9 +131,9 @@ target_sources(StarWarsCardGame PRIVATE
 )
 
 # Link to the actual SDL3 library.
-target_link_libraries(StarWarsCardGame PUBLIC SDL3::SDL3 SDL3_net::SDL3_net Vulkan::Vulkan)
-target_link_libraries(StarWarsCardGame PUBLIC nlohmann_json::nlohmann_json)
-target_link_libraries(StarWarsCardGame PUBLIC ${NLOHMANN_JSON_TARGET_NAME})
+target_link_libraries(StarWarsCardGameLib PUBLIC SDL3::SDL3 SDL3_net::SDL3_net Vulkan::Vulkan)
+target_link_libraries(StarWarsCardGameLib PUBLIC nlohmann_json::nlohmann_json)
+target_link_libraries(StarWarsCardGameLib PUBLIC ${NLOHMANN_JSON_TARGET_NAME})
 
 add_custom_command(TARGET StarWarsCardGame POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
@@ -144,3 +164,16 @@ if(UNIX)
             DESTINATION share/applications
     )
 endif()
+
+# Enable testing
+add_executable(StarWarsCardGameTest tests/test_main.cpp tests/doctest.h)
+target_link_libraries(StarWarsCardGameTest PRIVATE StarWarsCardGameLib)
+
+add_test(NAME StarWarsCardGameTest COMMAND StarWarsCardGameTest)
+
+target_include_directories(StarWarsCardGameTest PRIVATE imgui third_party/imgui)
+target_include_directories(StarWarsCardGameTest PRIVATE imgui third_party/imgui/backends)
+target_include_directories(StarWarsCardGameTest PRIVATE stb third_party/stb)
+target_include_directories(StarWarsCardGameTest PRIVATE SWCG include)
+target_include_directories(StarWarsCardGameTest PRIVATE third_party/imrad/include)
+target_include_directories(StarWarsCardGameTest PRIVATE third_party/json/include)

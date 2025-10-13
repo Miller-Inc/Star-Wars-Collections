@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <stdexcept>
 #include <cstring>
+#include <cstdlib> // For malloc, realloc, free
 #include <utility> // For std::move
 #include "EngineTypes/Logger.h"
 #include <vector>
@@ -189,13 +190,9 @@ namespace MillerInc
             throw std::out_of_range("Index out of range");
         }
 
-        // | 0 | 1 | 2 | 3 | 4 | (len = 5)
-        // RemoveAt(2)
-        // | 0 | 1 | 3 | 4 |
-
         if (index < length - 1)
         {
-            memcpy(data[index], data[index + 1], (sizeof(T) * (length - index - 1)));
+            memmove(&data[index], &data[index + 1], sizeof(T) * (length - index - 1));
         }
 
         length--;

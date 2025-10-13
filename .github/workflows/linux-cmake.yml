@@ -1,0 +1,44 @@
+name: linux-cmake.yml
+
+on: [push, pull_request]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up CMake
+        uses: jwlawson/actions-setup-cmake@v2
+
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y build-essential libvulkan-dev
+
+      - name: Configure
+        run: cmake -S . -B build
+
+      - name: Build
+        run: cmake --build build --target StarWarsCardGameTest -- -j 14
+
+      - name: Run tests
+        run: ./build/StarWarsCardGameTest > test_results.txt
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: test_results.txt
+
+      - name: Build Release
+        run: cmake --build release --config Release --target StarWarsCardGame -- -j 14
+
+      - name: Compress Build
+        run: tar -czvf StarWarsCardGame.tar.gz -C release .
+
+      - name: Upload Release build
+        uses: actions/upload-artifact@v4
+        with:
+          name: StarWarsCardGame-Release
+          path: StarWarsCardGame.tar.gz
