@@ -41,7 +41,7 @@ jobs:
         run: cmake --build release --config Release --target StarWarsCardGame -- -j 14
 
       - name: Compress Build
-        run: tar -czvf StarWarsCardGame.tar.gz -C release .
+        run: tar -czvf StarWarsCardGame.tar.gz -C Release .
 
       - name: Upload Release build
         uses: actions/upload-artifact@v4
