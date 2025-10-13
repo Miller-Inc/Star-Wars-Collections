@@ -73,6 +73,9 @@ add_library(StarWarsCardGameLib STATIC
         ${APP_ICON_RESOURCE}
 )
 
+target_compile_definitions(StarWarsCardGameLib PUBLIC SDL_STATIC SDL3_STATIC SDL3_NET_STATIC)
+#target_link_libraries(StarWarsCardGameLib PUBLIC SDL3::SDL3 SDL3_net::SDL3_net)
+
 target_link_libraries(StarWarsCardGameLib PUBLIC SDL3::SDL3 SDL3_net::SDL3_net Vulkan::Vulkan)
 target_link_libraries(StarWarsCardGameLib PUBLIC nlohmann_json::nlohmann_json)
 target_link_libraries(StarWarsCardGameLib PUBLIC ${NLOHMANN_JSON_TARGET_NAME})
@@ -144,6 +147,14 @@ add_custom_command(TARGET StarWarsCardGame POST_BUILD
         ${CMAKE_SOURCE_DIR}/Resources
         $<TARGET_FILE_DIR:StarWarsCardGame>/Resources
 )
+if(WIN32)
+    add_custom_command(TARGET StarWarsCardGame POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            $<TARGET_FILE:SDL3::SDL3>
+            $<TARGET_FILE:SDL3_net::SDL3_net>
+            $<TARGET_FILE_DIR:StarWarsCardGame>
+    )
+endif()
 
 if(UNIX)
     install(TARGETS StarWarsCardGame DESTINATION bin)
