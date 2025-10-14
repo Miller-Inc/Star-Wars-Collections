@@ -17,6 +17,7 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 
+#include "EngineTypes/InputValidation.h"
 #include "Windows/SW_Window.h"
 
 // This example doesn't compile with Emscripten yet! Awaiting SDL3 support.
@@ -239,10 +240,79 @@ namespace MillerInc::Game
         return mNetworkManager.CreateNamedSocket(serverName, ip, port) != nullptr;
     }
 
+    MArray<MString> GameInstance::StartServerAsync(int32_t port, const ClientConnectedCallback& callback)
+    {
+
+        if (mClients.contains(port))
+        {
+            M_LOGGER(Logger::LogNetwork, Logger::Warning, "Server already running on port " + std::to_string(port));
+            return {}; // Server already running on this port
+        }
+
+        MArray<ServerPtr> servers;
+        MArray<NET_Address*> AddressOut;
+        const bool output = mNetworkManager.CreateServer(port, servers, &AddressOut);
+        if (!output || servers.IsEmpty())
+        {
+            M_LOGGER(Logger::LogNetwork, Logger::Error, "Failed to create server on port " + std::to_string(port));
+            return {};
+        }
+        if (!mClients.contains(port))
+        {
+            mClients.emplace(port, std::vector<MString>{});
+        }
+
+        std::vector<MString> serverAddresses{};
+
+        for (int32_t i = 0; i < servers.Len(); i++)
+        {
+            MString addressString = NET_GetAddressString(AddressOut[i]);
+            if (addressString.empty())
+            {
+                addressString = "Unknown";
+            }
+
+            if (!InputValidation::IsValidIP(addressString))
+            {
+                M_LOGGER(Logger::LogNetwork, Logger::Warning, "Invalid IP address: " + addressString + ", skipping server creation on this address.");
+                NET_DestroyServer(servers[i]);
+                servers[i] = nullptr;
+                continue; // Skip invalid IP addresses
+            }
+
+            serverAddresses.emplace_back(addressString.c_str());
+            M_LOGGER(Logger::LogNetwork, Logger::Info, "Server listening on " + addressString + " Port: " + std::to_string(port));
+            mNetworkManager.WaitForConnectionAsync(servers[i], [this, port, callback](SocketPtr client)
+            {
+                NET_Address* Address = NET_GetStreamSocketAddress(client);
+                if (NET_WaitUntilResolved(Address, 1500) == NET_FAILURE)
+                {
+                    M_LOGGER(Logger::LogNetwork, Logger::Warning, "Failed to resolve client address, giving up.");
+                    return; // Failed to resolve address
+                }
+
+                const MString clientIP = NET_GetAddressString(Address);
+                // const MString clientIP = Address->hostname ? Address->hostname : "Unknown";
+                M_LOGGER(Logger::LogNetwork, Logger::Info, "Client (" + clientIP + ") connected to server on port " + std::to_string(port) + " asynchronously.");
+
+                if (!mClients.contains(port))
+                {
+                    mClients.emplace(port, std::vector<MString>{});
+                }
+                mClients[port].emplace_back(clientIP);
+                mNamedClients.emplace(clientIP, client);
+
+                callback(port, clientIP, client);
+            }, true);
+        }
+
+        return serverAddresses;
+    }
+
     void GameInstance::PreWindowInit()
     {
         ParseResources();
-        mNetworkManager.Init(); // Initialize the network manager
+        mNetworkManager.Init(&IsRunning); // Initialize the network manager
     }
 
     /******************************************************************************
@@ -572,6 +642,9 @@ namespace MillerInc::Game
 
         CleanupVulkanWindow();
         CleanupVulkan();
+
+        SDL_Delay(500); // Wait a bit to let background threads (if any) finish before quitting SDL
+
         SDL_Quit();
 
         free(Setup);
@@ -692,7 +765,7 @@ namespace MillerInc::Game
         // Our state
         bool show_demo_window = true;
         bool show_another_window = false;
-        ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+        auto clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
 
         VkCommandPoolCreateInfo poolInfo{};
         poolInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
@@ -703,7 +776,7 @@ namespace MillerInc::Game
 
         // Pass g_Queue and commandPool to VulkanSetup
         MillerInc::GPU::VulkanSetup VulkanSetupParams{g_Instance, g_Device, g_PhysicalDevice, g_Queue, commandPool};
-        Setup = (GPU::VulkanSetup*)malloc(sizeof(GPU::VulkanSetup));
+        Setup = static_cast<GPU::VulkanSetup*>(malloc(sizeof(GPU::VulkanSetup)));
         memcpy(Setup, &VulkanSetupParams, sizeof(GPU::VulkanSetup));
 
         PreWindowInit();

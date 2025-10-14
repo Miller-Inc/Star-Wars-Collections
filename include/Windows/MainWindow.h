@@ -4,6 +4,9 @@
 
 #pragma once
 
+#include <queue>
+#include <stack>
+
 #include "WindowBase.h"
 #include "Game/WindowTypes.h"
 
@@ -21,8 +24,13 @@ namespace MillerInc::GUI
         void Draw() override;
         void Close() override;
 
+        void SetOpenWindowType(Game::WindowType NewWindow);
+        void GoBack();
+
+
     protected:
         Game::WindowType Type = Game::WindowType::OpeningWindow;
+        std::stack<Game::WindowType> WindowStack;
 
         void OpenSettings();
         void OpenTraining();
@@ -37,9 +45,18 @@ namespace MillerInc::GUI
         void LoadingWindow();
         void OpenNetworkWindow();
         void JoinGameWindow();
+        void HostWaitingWindow();
+
+        void AddBackButton();
 
         bool bNetworkWindowOpened = true;
         bool bNetworkConnecting = false;
+
+        void StartGameServer();
+        MArray<MString> mServerIps;
+        MString mServerIpsString;
+        MString mConnectedClientsString;
+        MArray<SocketPtr> mConnectedClients;
 
     };
 }

@@ -6,6 +6,7 @@
 #include "Windows/NetworkPlayWindow.h"
 #include "EngineTypes/Logger.h"
 #include "EngineTypes/InputValidation.h"
+#include "Game/MacroDefs.h"
 
 namespace MillerInc::GUI
 {
@@ -33,7 +34,7 @@ namespace MillerInc::GUI
         static bool window = true;
         ImGui::SetNextWindowSize(ImVec2(1280,760));
 
-        if (ImGui::Begin("Star Wars: Card Game", &window), ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar)
+        if (ImGui::Begin("Star Wars: Card Game"), ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoTitleBar)
         {
             switch (Type)
             {
@@ -52,6 +53,9 @@ namespace MillerInc::GUI
                 break;
             case Game::WindowType::NetworkJoinSetupWindow:
                 JoinGameWindow();
+                break;
+            case Game::WindowType::NetworkHostSetupWindow:
+                HostWaitingWindow();
                 break;
             default:
                 OpeningWindow();
@@ -82,9 +86,53 @@ namespace MillerInc::GUI
         }
     }
 
+    void MainWindow::SetOpenWindowType(const Game::WindowType NewWindow)
+    {
+        // If the new window is the opening window, clear the stack
+        if (NewWindow == Game::WindowType::OpeningWindow)
+        {
+            Type = Game::WindowType::OpeningWindow;
+            while (!WindowStack.empty())
+            {
+                WindowStack.pop();
+            }
+            return;
+        }
+
+        // If the new window is the same as the current window, do nothing
+        if (Type != NewWindow)
+        {
+            WindowStack.push(Type);
+            Type = NewWindow;
+        }
+    }
+
+    void MainWindow::GoBack()
+    {
+        if (!WindowStack.empty())
+        {
+            Type = WindowStack.top();
+            WindowStack.pop();
+            while (Type == Game::WindowType::LoadingWindow && !WindowStack.empty())
+            {
+                if (!WindowStack.empty())
+                {
+                    Type = WindowStack.top();
+                    WindowStack.pop();
+                } else
+                {
+                    Type = Game::WindowType::OpeningWindow;
+                }
+            }
+        } else
+        {
+            Type = Game::WindowType::OpeningWindow;
+        }
+    }
+
     void MainWindow::OpenSettings()
     {
-
+        M_LOGGER(Logger::LogCore, Logger::Warning, "Opening Settings.");
     }
 
     void MainWindow::OpenTraining()
@@ -103,12 +151,12 @@ namespace MillerInc::GUI
 
     void MainWindow::OpenMultiplayer()
     {
-        Type = Game::WindowType::NetworkWindow;
+        SetOpenWindowType(Game::WindowType::NetworkWindow);
     }
 
     void MainWindow::ExitGame()
     {
-        Type = Game::WindowType::OpeningWindow;
+        SetOpenWindowType(Game::WindowType::OpeningWindow);
         if (mGameInstance)
         {
             mGameInstance->StopMainLoop();
@@ -126,12 +174,14 @@ namespace MillerInc::GUI
         ImGui::SetCursorPos(ImVec2(515,680));
         if (ImGui::Button("Press/Tap to Start", ImVec2(250,50)))
         {
-            Type = Game::WindowType::SelectionWindow;
+            SetOpenWindowType(Game::WindowType::SelectionWindow);
         }
     }
 
     void MainWindow::SelectionWindow()
     {
+        AddBackButton();
+
         ImGui::SetCursorPos(ImVec2(590,100));
         if (ImGui::Button("Story Mode", ImVec2(100,50)))
         {
@@ -181,21 +231,26 @@ namespace MillerInc::GUI
 
     void MainWindow::OpenNetworkWindow()
     {
+        AddBackButton();
+
         ImGui::SetCursorPos(ImVec2(590,275));
         if (ImGui::Button("Host Game", ImVec2(100,50)))
         {
-            Type = Game::WindowType::NetworkHostSetupWindow;
+            SetOpenWindowType(Game::WindowType::NetworkHostSetupWindow);
+            SetOpenWindowType(Game::WindowType::LoadingWindow); // Temporary until multiplayer is ready
+            StartGameServer(); // Start server asynchronously and go to loading screen
         }
 
         ImGui::SetCursorPos(ImVec2(590,345));
         if (ImGui::Button("Join Game", ImVec2(100,50)))
         {
-            Type = Game::WindowType::NetworkJoinSetupWindow;
+            SetOpenWindowType(Game::WindowType::NetworkJoinSetupWindow);
         }
     }
 
     void MainWindow::JoinGameWindow()
     {
+        AddBackButton();
         ImGui::SetCursorPos(ImVec2(550,210));
         ImGui::PushItemWidth(200); //NOTE: (Push/Pop)ItemWidth is optional
         static char ip_string[128] = "";
@@ -225,7 +280,7 @@ namespace MillerInc::GUI
                 {
                     if (mGameInstance->ConnectToServer("Multiplayer_Server", std::string(ip_string), port))
                     {
-                        Type = Game::WindowType::LoadingWindow; // TODO: Change to actual multiplayer window when ready
+                        SetOpenWindowType(Game::WindowType::LoadingWindow); // TODO: Change to actual multiplayer window when ready
                     }
                 }
             } else
@@ -244,4 +299,58 @@ namespace MillerInc::GUI
         }
     }
 
+    void MainWindow::HostWaitingWindow()
+    {
+        AddBackButton();
+
+        ImGui::SetCursorPos(ImVec2(524.5,149.5));
+        ImGui::Text("Connect with Following Addresses:\n%s", mServerIpsString.c_str()); // Display all server IPs
+
+        ImGui::SetCursorPos(ImVec2(580.5,330.5));
+        ImGui::Text("Connected Users:\n%s", mConnectedClientsString.c_str()); // Display all connected clients
+
+        ImGui::SetCursorPos(ImVec2(1065,32));
+        if (ImGui::Button("Continue With Current Users", ImVec2(200,50)))
+        {
+
+        }
+    }
+
+    void MainWindow::AddBackButton()
+    {
+        ImGui::SetCursorPos(ImVec2(5,25));
+        if (ImGui::Button("Back", ImVec2(100,50)))
+        {
+            GoBack();
+        }
+    }
+
+    void MainWindow::StartGameServer()
+    {
+        const auto serverIps = mGameInstance->StartServerAsync(DEFAULT_PORT, [this](int32_t port, const MString& clientIp, SocketPtr clientSocket)
+        {
+            mConnectedClients += clientSocket;
+            mConnectedClientsString += clientIp + "\n";
+        });
+        for (auto& serverIp : serverIps)
+        {
+            M_LOGGER(Logger::LogTemp, Logger::Info, "Server IP: " + serverIp);
+        }
+
+        if (serverIps.IsEmpty())
+        {
+            M_LOGGER(Logger::LogNetwork, Logger::Error, "Failed to start game server.");
+            GoBack(); // Go back to previous window if server failed to start
+            return;
+        }
+
+        mServerIps = serverIps;
+        mServerIpsString = ""; // Clear previous string
+        for (const auto& ip : mServerIps)
+        {
+            mServerIpsString += ip + "\n";
+        }
+
+        GoBack();
+    }
 }

@@ -95,6 +95,7 @@ namespace MillerInc
         void operator+=(const T& element);
         [[nodiscard]] T& Get(size_t index);
         [[nodiscard]] size_t Len() const;
+        [[nodiscard]] bool IsEmpty() const;
         void RemoveAt(size_t index);
         void Add(const T& element);
         void Clear();
@@ -179,6 +180,12 @@ namespace MillerInc
     size_t MArray<T>::Len() const
     {
         return length;
+    }
+
+    template <typename T>
+    bool MArray<T>::IsEmpty() const
+    {
+        return length == 0;
     }
 
     template <typename T>

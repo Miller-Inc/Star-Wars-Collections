@@ -8,7 +8,7 @@
 #include "SDL3_net/SDL_net.h"
 
 
-bool MillerInc::Network::NetworkManager::Init()
+bool MillerInc::Network::NetworkManager::Init(bool* runningFlag)
 {
     if (isInit)
     {
@@ -26,6 +26,14 @@ bool MillerInc::Network::NetworkManager::Init()
     {
         M_LOGGER(Logger::LogNetwork, Logger::Error, "SDLNet_Init: " ); // + std::string(SDL_GetError()));
         return false;
+    }
+
+    if (runningFlag)
+    {
+        bIsRunning = runningFlag;
+    } else
+    {
+        bIsRunning = new bool(true);
     }
 
     isInit = true;
@@ -47,7 +55,7 @@ void MillerInc::Network::NetworkManager::Shutdown()
     NET_Quit();
 }
 
-bool MillerInc::Network::NetworkManager::CreateServer(const int port, MArray<ServerPtr>& ServerOut)
+bool MillerInc::Network::NetworkManager::CreateServer(const int port, MArray<ServerPtr>& ServerOut, MArray<NET_Address*>* AddressOut)
 {
     ServerOut.Clear();
 
@@ -80,6 +88,10 @@ bool MillerInc::Network::NetworkManager::CreateServer(const int port, MArray<Ser
         if (NET_Server* server = NET_CreateServer(localAddress, port))
         {
             mListenServers += server;
+            if (AddressOut)
+            {
+                AddressOut->Add(localAddress);
+            }
             M_LOGGER(Logger::LogNetwork, Logger::Info, "Server created on IP: " + std::string(localAddress->human_readable ? localAddress->human_readable : "Unknown") + " Port: " + std::to_string(port));
 
         }
@@ -157,35 +169,35 @@ bool MillerInc::Network::NetworkManager::WaitForConnectionAsync(const ServerPtr&
     auto* thread = new std::thread{([this, socket, callback, continueListening]()
         {
             // std::unique_lock<std::mutex> lock(mutex);
-            ++running;
+            // ++running;
             try {
                 M_LOGGER(Logger::LogNetwork, Logger::Info, "Waiting for connection...");
-                while (isInit)
+                while (isInit && *bIsRunning)
                 {
                     SocketPtr client = Accept(socket);
                     if (client != nullptr)
                     {
                         callback(client);
-                        if (!continueListening)
+                        if (!continueListening || !isInit || !*bIsRunning)
                             break;
                     }
                     SDL_Delay(250);
                 }
             } catch (const std::exception& e)
             {
-                --running;
+                // --running;
                 M_LOGGER(Logger::LogNetwork, Logger::Error, "Exception in connection thread: " + std::string(e.what()));
             }
             // std::unique_lock<std::mutex> unlock(mutex);
-            --running;
-        if (running == 0) condition.notify_one();
+        //     --running;
+        // if (running == 0) condition.notify_one();
 
         }
     )};
 
 
     listenThreads.Add(thread);
-    thread->detach(); // Detach the thread to run independently
+    // thread->detach(); // Detach the thread to run independently
 
     return true;
 }
@@ -244,12 +256,12 @@ void MillerInc::Network::NetworkManager::WaitForThreads()
         if (thread && thread->joinable())
         {
             thread->join();
-            delete thread;
         }
+        delete thread;
     }
     listenThreads.Clear();
-    std::unique_lock<std::mutex> lock(mutex);
-    condition.wait(lock, [this]() { return running == 0; });
+    // std::unique_lock<std::mutex> lock(mutex);
+    // condition.wait(lock, [this]() { return running == 0; });
 }
 
 SocketPtr MillerInc::Network::NetworkManager::CreateNamedSocket(const MString& name, const MString& ip, int port)
@@ -534,6 +546,8 @@ void MillerInc::Network::NetworkManager::Cleanup()
         return;
 
     closed = true;
+
+    isInit = false;
 
     WaitForThreads();
 

@@ -20,6 +20,7 @@ namespace MillerInc::Game
     typedef std::function<void()> DrawWindowCallback;
     typedef std::function<void(GameInstance*)> InitWindowCallback;
     typedef std::function<void(float)> TickCallback;
+    typedef std::function<void(int32_t, const MString&, SocketPtr)> ClientConnectedCallback;
 
     typedef struct mWindow
     {
@@ -82,6 +83,9 @@ namespace MillerInc::Game
         /// Return a reference to the network manager
         Network::NetworkManager *GetNetworkManager() { return &mNetworkManager; }
 
+        /// Start a server on a specific port asynchronously and return a list of the addresses in string form that the server is listening on
+        MArray<MString> StartServerAsync(int32_t port, const ClientConnectedCallback& callback = nullptr);
+
         /// Exits the main loop and shuts down the game instance
         void StopMainLoop() { RunLoop = false; }
 
@@ -108,6 +112,13 @@ namespace MillerInc::Game
 
         /// Manage network connections
         Network::NetworkManager mNetworkManager{};
+
+        /// Client names by their port
+        std::map<int32_t, std::vector<MString>> mClients{};
+
+        /// All Connected Clients by name
+        MMap<MString, SocketPtr> mNamedClients;
+
 
     };
 }

@@ -42,10 +42,10 @@ namespace MillerInc::Network
         NetworkManager() = default;
         ~NetworkManager() = default;
 
-        bool Init(); // Initialize the network manager
+        bool Init(bool* runningFlag = nullptr); // Initialize the network manager with an optional external running flag
         void Shutdown(); // Shutdown the network manager
 
-        bool CreateServer(int port, MArray<ServerPtr>& ServerOut); // Create a server
+        bool CreateServer(int port, MArray<ServerPtr>& ServerOut, MArray<NET_Address*>* AddressOut = nullptr); // Create a server
         SocketPtr CreateClient(const char* ip, int port); // Create a client
         SocketPtr Accept(const ServerPtr& server); // Accept a client connection
         bool WaitForConnectionAsync(const ServerPtr& socket, const std::function<void(SocketPtr)>& callback, bool continueListening = false); // Wait for a client connection asynchronously
@@ -125,9 +125,9 @@ namespace MillerInc::Network
         /// Map of the sockets that have been given a name for easy access
         MMap<MString, SocketPtr> mNamedSockets; // Map of named sockets
 
-
-        std::mutex mutex;
-        std::condition_variable condition;
-        int running = 0;
+        // std::mutex mutex;
+        // std::condition_variable condition;
+        // int running = 0;
+        bool* bIsRunning = nullptr; // Pointer to external running flag
     };
 }
