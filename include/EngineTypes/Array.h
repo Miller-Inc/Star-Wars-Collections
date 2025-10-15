@@ -51,7 +51,7 @@ namespace MillerInc
                 capacity = other.capacity;
                 if (capacity > 0)
                 {
-                    data = new T[capacity];
+                    data = malloc(sizeof(T) * capacity);
                     std::copy(other.data, other.data + length, data);
                 } else
                 {
@@ -81,7 +81,7 @@ namespace MillerInc
             capacity = length;
             if (capacity > 0)
             {
-                data = new T[capacity];
+                data = malloc(sizeof(T) * capacity);
                 std::copy(vec.begin(), vec.end(), data);
             } else
             {
