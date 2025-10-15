@@ -97,7 +97,7 @@ namespace MillerInc::GPU
         vkBindImageMemory(device, image, imageMemory, 0);
     }
 
-    TextureImage VulkanSetup::CreateTextureImage(const std::string& filename) const
+    VulkanSetup::TextureImage VulkanSetup::CreateTextureImage(const std::string& filename) const
     {
         int texWidth, texHeight, texChannels;
         stbi_uc* pixels = stbi_load(filename.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);

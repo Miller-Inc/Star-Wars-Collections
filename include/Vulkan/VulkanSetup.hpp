@@ -20,21 +20,21 @@
 
 namespace MillerInc::GPU
 {
-    typedef struct textureImage
-    {
-        VkImage image{};
-        VkDeviceMemory memory{};
-        VkDescriptorSet textureId{};
-        MSize size;
-        VkImageView ImageView{ VK_NULL_HANDLE };
-        VkSampler Sampler{ VK_NULL_HANDLE };
-    } TextureImage;
+
 
     class VulkanSetup
     {
     public:
 
-        typedef TextureImage TextureImage;
+        typedef struct textureImage
+        {
+            VkImage image{};
+            VkDeviceMemory memory{};
+            VkDescriptorSet textureId{};
+            MSize size;
+            VkImageView ImageView{ VK_NULL_HANDLE };
+            VkSampler Sampler{ VK_NULL_HANDLE };
+        } TextureImage;
 
         VulkanSetup(VkInstance instance, VkDevice device, VkPhysicalDevice physical, VkQueue graphics_queue, VkCommandPool cmd_pool); // Constructor to initialize with a Vulkan device
 
