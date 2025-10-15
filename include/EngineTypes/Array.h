@@ -218,7 +218,7 @@ namespace MillerInc
     template <typename T>
     void MArray<T>::Clear()
     {
-        delete[] data;
+        free(data);
         data = nullptr;
         length = 0;
         capacity = 0;
