@@ -5,6 +5,7 @@
 #include "Network/NetworkManager.h"
 #include <thread>
 #include "EngineTypes/Logger.h"
+#include "EngineTypes/MacroDefs.h"
 #include "SDL3_net/SDL_net.h"
 
 

@@ -2,29 +2,40 @@
 // Created by James Miller on 9/3/2025.
 //
 
+/// VulkanSetup.hpp
+/// This file defines the VulkanSetup class, which provides utility functions for setting up Vulkan resources such
+///     as buffers, images, and textures. It is designed to work with an existing Vulkan instance and device.
+///     The main purpose of this class is to simplify common Vulkan operations and resource management. Most of the
+///     code has been taken from Vulkan official examples and adapted for this engine.
+
 #pragma once
 #include <string>
+#include "EngineTypes/MacroDefs.h"
 #include "EngineTypes/Vector.h"
-#if defined(__linux__) || defined(__APPLE__)
-#include <vulkan/vulkan.h>
-#elif defined(_WIN32)
-#include <Vulkan/vulkan.h>
+#if PLATFORM_MACOSX || PLATFORM_UNIX
+#include <vulkan/vulkan.h> // For vulkan functions
+#elif PLATFORM_WINDOWS
+#include <Vulkan/vulkan.h> // For vulkan functions
 #endif
 
 namespace MillerInc::GPU
 {
+    typedef struct textureImage
+    {
+        VkImage image{};
+        VkDeviceMemory memory{};
+        VkDescriptorSet textureId{};
+        MSize size;
+        VkImageView ImageView{ VK_NULL_HANDLE };
+        VkSampler Sampler{ VK_NULL_HANDLE };
+    } TextureImage;
+
     class VulkanSetup
     {
     public:
-        typedef struct textureImage
-        {
-            VkImage image{};
-            VkDeviceMemory memory{};
-            VkDescriptorSet textureId{};
-            MSize size;
-            VkImageView ImageView{ VK_NULL_HANDLE };
-            VkSampler Sampler{ VK_NULL_HANDLE };
-        } TextureImage;
+
+        typedef TextureImage TextureImage;
+
         VulkanSetup(VkInstance instance, VkDevice device, VkPhysicalDevice physical, VkQueue graphics_queue, VkCommandPool cmd_pool); // Constructor to initialize with a Vulkan device
 
         void CreateBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory) const;

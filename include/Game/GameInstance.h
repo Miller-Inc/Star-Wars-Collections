@@ -2,27 +2,37 @@
 // Created by James Miller on 9/4/2025.
 //
 
+/// GameInstance.h
+/// This file contains the declaration of the GameInstance class, which manages the core game loop,
+///     as well as window and texture management. This covers up most of the backend code, allowing
+///     developers to focus on game logic and content. The main code has been taken and adapted from the
+///     imgui Vulkan SDL3 example. Over time, the goal is to fully move this code to use the engine's
+///     class structures and types, but for now, it is a hybrid of imgui example code and engine code.
+
 #pragma once
 
-#include <functional>
-#include <map>
-#include "EngineTypes/Image.h"
-#include "EngineTypes/String.h"
-#include "EngineTypes/Vector.h"
-#include "EngineTypes/ResourceLoader.h"
-#include "Network/NetworkManager.h"
+#include <functional> // For std::function
+#include "EngineTypes/Core.h" // Core engine types and utilities
+#include "EngineTypes/ResourceLoader.h" // Resource loading utilities
+#include "Network/NetworkManager.h" // Network management utilities
 
+/// Define the path to the resources JSON file
 #define RESOURCE_RELATIVE_PATH "Resources/resources.json"
 
 namespace MillerInc::Game
 {
+    /// Forward declarations and type definitions
+
+    /// Forward declaration of GameInstance since it is used in callback typedefs
     class GameInstance;
+
+    /// Callback typedefs for window drawing, initialization, ticking, and client connections
     typedef std::function<void()> DrawWindowCallback;
     typedef std::function<void(GameInstance*)> InitWindowCallback;
     typedef std::function<void(float)> TickCallback;
     typedef std::function<void(int32_t, const MString&, SocketPtr)> ClientConnectedCallback;
 
-    typedef struct mWindow
+    typedef struct m_window
     {
         MString Name;
         DrawWindowCallback DrawCallback;
@@ -97,15 +107,16 @@ namespace MillerInc::Game
         void Cleanup();
 
     private:
-        MVector2 WindowSize = {800, 600}; // Default window size
-        std::map<MString, MImage> Textures{};
-        std::map<MString, MWindow> Windows{};
+        MVector2 mWindowSize = {800, 600}; // Default window size
+        std::map<MString, MImage> mTextures{};
+        std::map<MString, MWindow> mWindows{};
 
-        GPU::VulkanSetup *Setup = nullptr; // Pointer to Vulkan setup
+        GPU::VulkanSetup *mSetup = nullptr; // Pointer to Vulkan setup
         int Program(); // Main program loop
         bool IsRunning = false;
         bool RunLoop = true;
 
+        /// Resource loader instance, handles loading resources from disk and labeling them for use
         ResourceLoader mResourceLoader{};
 
         void ParseResources();

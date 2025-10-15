@@ -4,7 +4,6 @@
 
 #include <Windows/SW_Window.h>
 #include "imgui.h"
-#include <stdexcept>
 #include "EngineTypes/Logger.h"
 #include "Game/GameInstance.h"
 

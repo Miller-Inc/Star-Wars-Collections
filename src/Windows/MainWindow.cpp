@@ -72,14 +72,14 @@ namespace MillerInc::GUI
         WindowBase::Close();
         if (mGameInstance)
         {
-            for (const auto& [name, image] : Textures)
+            for (const auto& [name, image] : mTextures)
             {
                 if (image)
                 {
                     mGameInstance->RemoveImage(name);
                 }
             }
-            Textures.clear();
+            mTextures.clear();
         } else
         {
             M_LOGGER(Logger::LogCore, Logger::Warning, "GameInstance is null. Cannot unload images.");
@@ -165,9 +165,9 @@ namespace MillerInc::GUI
 
     void MainWindow::OpeningWindow()
     {
-        if (Textures.contains("Opening Image"))
+        if (mTextures.contains("Opening Image"))
         {
-            const auto& image = Textures["Opening Image"];
+            const auto& image = mTextures["Opening Image"];
             ImGui::Image(image->TextureHandle.textureId, {image->Size.x, image->Size.y});
         }
 
@@ -221,10 +221,10 @@ namespace MillerInc::GUI
 
     void MainWindow::LoadingWindow()
     {
-        if (Textures.contains("Stars"))
+        if (mTextures.contains("Stars"))
         {
             ImGui::SetCursorPos(ImVec2(0,0));
-            const auto& image = Textures["Stars"];
+            const auto& image = mTextures["Stars"];
             ImGui::Image(image->TextureHandle.textureId, {image->Size.x, image->Size.y - 8});
         }
     }

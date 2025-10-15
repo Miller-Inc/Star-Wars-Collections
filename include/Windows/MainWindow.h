@@ -2,13 +2,20 @@
 // Created by James Miller & Joshua Miller on 9/10/2025.
 //
 
+/// MainWindow.h
+/// This file contains the declaration of the MainWindow class, which manages the main menu and navigation
+///     between different game modes and settings. It utilizes ImGui for rendering the user interface and
+///     handles user interactions to transition between various windows such as story mode, free play,
+///     multiplayer, training, and settings. The MainWindow class also manages network connections for
+///     multiplayer functionality, including hosting and joining games. It maintains a stack of window types
+///     to allow users to navigate back to previous windows seamlessly. This class is a crucial part of the
+///     game's user interface, providing an intuitive and interactive experience for players.
+
 #pragma once
 
-#include <queue>
-#include <stack>
-
-#include "WindowBase.h"
-#include "Game/WindowTypes.h"
+#include <stack> // For managing window history
+#include "WindowBase.h" // Base class for all windows
+#include "Game/WindowTypes.h" // Enum for different window types
 
 namespace MillerInc::GUI
 {

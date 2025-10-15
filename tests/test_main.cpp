@@ -9,8 +9,9 @@
 #include "EngineTypes/InputValidation.h"
 #include "EngineTypes/Vector.h"
 #include "EngineTypes/Array.h"
-#include "Game/GameInstance.h"
-#include "EngineTypes/ResourceLoader.h"
+#include "EngineTypes/String.h"
+#include "EngineTypes/Map.h"
+#include "EngineTypes/Image.h"
 #include "Network/NetworkManager.h"
 #include "Game/WindowTypes.h"
 

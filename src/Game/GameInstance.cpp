@@ -2,11 +2,18 @@
 // Created by James Miller on 9/4/2025.
 //
 
+/// GameInstance.cpp
+/// This file contains the implementation of the GameInstance class, which manages the core game loop,
+///     as well as window and texture management. It initializes Vulkan, handles rendering and updates,
+///     and is the centerpiece of the game engine. The main code has been taken and adapted from the
+///     imgui Vulkan SDL3 example. Over time, the goal is to fully move this code to use the engine's
+///     class structures and types, but for now, it is a hybrid of imgui example code and engine code.
+
 #define DEMO false
 #define STB_IMAGE_IMPLEMENTATION
-#define WINDOW_TITLE "Star Wars Card Game"
-#include "stb_image.h"
+#define WINDOW_TITLE "Star Wars Collections"
 
+/// ImGui and SDL/Vulkan headers
 #include "imgui.h"
 #include "imgui_demo.cpp"
 #include "imgui_impl_sdl3.h"
@@ -17,8 +24,11 @@
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_vulkan.h>
 
-#include "EngineTypes/InputValidation.h"
-#include "Windows/SW_Window.h"
+/// Other engine headers
+#include "stb_image.h" // For image loading
+#include "EngineTypes/InputValidation.h" // For input validation
+#include "EngineTypes/MacroDefs.h"
+#include "Game/GameInstance.h"
 
 // This example doesn't compile with Emscripten yet! Awaiting SDL3 support.
 #ifdef __EMSCRIPTEN__
@@ -58,7 +68,7 @@ namespace MillerInc::Game
     void GameInstance::Tick(const float deltaTime)
     {
         // Update logic here
-        for (const auto& window : Windows | std::views::values)
+        for (const auto& window : mWindows | std::views::values)
         {
             if (window.Ticker)
             {
@@ -70,7 +80,7 @@ namespace MillerInc::Game
     void GameInstance::Render()
     {
         // Rendering logic here
-        for (const auto& window : Windows | std::views::values)
+        for (const auto& window : mWindows | std::views::values)
         {
             if (window.OpenWindow && *window.OpenWindow)
             {
@@ -84,35 +94,35 @@ namespace MillerInc::Game
 
     bool GameInstance::OpenImage(const MString& PathToImage, const MString& ImageName, const MVector2& Position, const MSize& ImageScale)
     {
-        const MillerInc::GPU::VulkanSetup::TextureImage texture = Setup->CreateTextureImage(PathToImage);
+        const MillerInc::GPU::VulkanSetup::TextureImage texture = mSetup->CreateTextureImage(PathToImage);
         if (texture.image == VK_NULL_HANDLE)
         {
             M_LOGGER(Logger::LogGraphics, Logger::Error, "Failed to load texture image from path: " + PathToImage);
             return false;
         }
         MImage newImage = {texture, ImageName, texture.size, Position};
-        Textures.emplace(ImageName, newImage);
+        mTextures.emplace(ImageName, newImage);
         return true;
     }
 
     MImage* GameInstance::GetImage(const MString& ImageName)
     {
-        MImage* image = &Textures[ImageName];
+        MImage* image = &mTextures[ImageName];
         image->ref_count++;
         return image;
     }
 
     MImage* GameInstance::OpenGetImage(const MString& PathToImage, const MString& ImageName, const MVector2& Position, const MSize& Scale)
     {
-        if (Textures.contains(ImageName))
+        if (mTextures.contains(ImageName))
         {
-            MImage* image = &Textures[ImageName];
+            MImage* image = &mTextures[ImageName];
             image->ref_count++;
             return image;
         }
         if (OpenImage(PathToImage, ImageName, Position, Scale))
         {
-            MImage* image = &Textures[ImageName];
+            MImage* image = &mTextures[ImageName];
             image->ref_count++;
             return image;
         }
@@ -123,8 +133,8 @@ namespace MillerInc::Game
 
     bool GameInstance::RemoveImage(const MString& ImageName)
     {
-        const auto it = Textures.find(ImageName);
-        if (it == Textures.end())
+        const auto it = mTextures.find(ImageName);
+        if (it == mTextures.end())
             return false;
 
         MImage* image = &it->second;
@@ -142,43 +152,43 @@ namespace MillerInc::Game
 
     bool GameInstance::DeleteImage(const MString& ImageName)
     {
-        const auto it = Textures.find(ImageName);
-        if (it == Textures.end())
+        const auto it = mTextures.find(ImageName);
+        if (it == mTextures.end())
             return false;
 
         // Destroy Vulkan image and free memory
         const auto& texture = it->second.TextureHandle;
         if (texture.image != VK_NULL_HANDLE)
         {
-            vkDestroyImage(Setup->device, texture.image, nullptr);
+            vkDestroyImage(mSetup->device, texture.image, nullptr);
         }
         if (texture.memory != VK_NULL_HANDLE)
         {
-            vkFreeMemory(Setup->device, texture.memory, nullptr);
+            vkFreeMemory(mSetup->device, texture.memory, nullptr);
         }
         // Optionally destroy image view and sampler if present
         if (texture.ImageView != VK_NULL_HANDLE)
         {
-            vkDestroyImageView(Setup->device, texture.ImageView, nullptr);
+            vkDestroyImageView(mSetup->device, texture.ImageView, nullptr);
         }
         if (texture.Sampler != VK_NULL_HANDLE)
         {
-            vkDestroySampler(Setup->device, texture.Sampler, nullptr);
+            vkDestroySampler(mSetup->device, texture.Sampler, nullptr);
         }
 
         M_LOGGER(Logger::LogGraphics, Logger::Info, "Deleting image: " + ImageName);
-        Textures.erase(it);
+        mTextures.erase(it);
         return true;
     }
 
     bool GameInstance::AddWindow(MWindow& newWindow)
     {
-        if (Windows.contains(newWindow.Name))
+        if (mWindows.contains(newWindow.Name))
         {
             M_LOGGER(Logger::LogCore, Logger::Warning, "Window with name " + newWindow.Name + " already exists. Use a different name.");
             return false;
         }
-        Windows.emplace(newWindow.Name, newWindow);
+        mWindows.emplace(newWindow.Name, newWindow);
 
         if (IsRunning && newWindow.InitCallback)
         {
@@ -207,7 +217,7 @@ namespace MillerInc::Game
             } else
             {
                 M_LOGGER(Logger::LogCore, Logger::Info, "Loaded image: " + data.Path + " as '" + data.Name + "'");
-                Images.emplace(data.Name, &Textures[data.Name]);
+                Images.emplace(data.Name, &mTextures[data.Name]);
             }
         }
 
@@ -643,11 +653,9 @@ namespace MillerInc::Game
         CleanupVulkanWindow();
         CleanupVulkan();
 
-        SDL_Delay(500); // Wait a bit to let background threads (if any) finish before quitting SDL
-
         SDL_Quit();
 
-        free(Setup);
+        free(mSetup);
     }
 
     int GameInstance::Program()
@@ -776,12 +784,12 @@ namespace MillerInc::Game
 
         // Pass g_Queue and commandPool to VulkanSetup
         MillerInc::GPU::VulkanSetup VulkanSetupParams{g_Instance, g_Device, g_PhysicalDevice, g_Queue, commandPool};
-        Setup = static_cast<GPU::VulkanSetup*>(malloc(sizeof(GPU::VulkanSetup)));
-        memcpy(Setup, &VulkanSetupParams, sizeof(GPU::VulkanSetup));
+        mSetup = static_cast<GPU::VulkanSetup*>(malloc(sizeof(GPU::VulkanSetup)));
+        memcpy(mSetup, &VulkanSetupParams, sizeof(GPU::VulkanSetup));
 
         PreWindowInit();
 
-        for (const auto &Window : Windows | std::views::values)
+        for (const auto &Window : mWindows | std::views::values)
         {
             if (Window.InitCallback)
             {

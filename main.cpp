@@ -1,6 +1,13 @@
+/// main.cpp
+/// This is the main entry point for the application. It initializes the game instance,
+///     sets up the main window, and starts the game loop. Mainly it passes control to
+///     the GameInstance class which handles the rest of the application lifecycle. If
+///     the developer ever wanted to test something quickly, this is the place to do it,
+///     simply add a macro at the top and wrap the test code in an if statement. Please
+///     ensure that when it gets merged back into main, that the test code is removed (via macro).
+
 #include <functional>
 #include <iostream>
-
 #include "EngineTypes/Logger.h"
 #include "EngineTypes/ResourceLoader.h"
 #include "Game/GameInstance.h"

@@ -2,13 +2,17 @@
 // Created by James Miller on 9/2/2025.
 //
 
+/// SW_Window.h
+/// This file defines the SW_Window class, which is a simple window class for rendering images using Vulkan and SDL3.
+///     This window is never actually used, it was just a test class for ImGui and SDL3 integration.
+
 #pragma once
 #include <map>
-#include "EngineTypes/Image.h"
+#include "EngineTypes/Core.h"
 #include "Game/GameInstance.h"
-#if defined(__linux__) || defined(__APPLE__)
+#if PLATFORM_UNIX || PLATFORM_MACOS
 #include <vulkan/vulkan.h>
-#elif defined(_WIN32)
+#elif PLATFORM_WINDOWS
 #include <Vulkan/vulkan.h>
 #endif
 #include "Vulkan/VulkanSetup.hpp"

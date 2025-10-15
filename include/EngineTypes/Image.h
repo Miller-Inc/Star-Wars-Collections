@@ -6,13 +6,14 @@
 
 #include "EngineTypes/Vector.h"
 #include "Vulkan/VulkanSetup.hpp"
+#include <cstdint>
 
 namespace MillerInc
 {
     typedef struct mImage
     {
-        MillerInc::GPU::VulkanSetup::TextureImage TextureHandle;
-        std::string Name;
+        GPU::VulkanSetup::TextureImage TextureHandle;
+        MString Name;
         MillerInc::MSize Size{}; // Size of the image
         MillerInc::MVector2 Position{}; // Position of the image
         MillerInc::MVector2 Scale{ 1.0f, 1.0f}; // Scale of the image

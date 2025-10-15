@@ -9,6 +9,7 @@
 #endif
 
 #include "EngineTypes/String.h"
+#include "EngineTypes/MacroDefs.h"
 
 namespace MillerInc
 {
@@ -61,4 +62,8 @@ namespace MillerInc
     };
 }
 
+#if ENABLE_DEBUG_LOGGING
 #define M_LOGGER(category, verbosity, message) MillerInc::Logger::Log(category, verbosity, message, __FILE__, __LINE__)
+#else
+#define M_LOGGER(category, verbosity, message) ;
+#endif

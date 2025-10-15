@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.22)
 project(StarWarsCardGame CXX)
 
+# **************** General Configuration ****************** #
+# Set the C++ standard to C++20
 set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/$<CONFIGURATION>")
@@ -26,6 +28,7 @@ add_subdirectory(third_party/sdl3 EXCLUDE_FROM_ALL)
 add_subdirectory(third_party/sdl3_net)
 add_subdirectory(third_party/json)
 
+# List of source files for the StarWarsCardGame library
 set(STAR_WARS_CARD_GAME_SOURCES
         src/Windows/SW_Window.cpp
         src/Vulkan/VulkanSetup.cpp
@@ -40,6 +43,7 @@ set(STAR_WARS_CARD_GAME_SOURCES
         src/EngineTypes/InputValidation.cpp
 )
 
+# List of header files for the StarWarsCardGame library
 set(STAR_WARS_CARD_GAME_HEADERS
         include/Windows/SW_Window.h
         third_party/stb/stb_image.h
@@ -57,9 +61,15 @@ set(STAR_WARS_CARD_GAME_HEADERS
         include/Game/WindowTypes.h
         include/EngineTypes/ResourceLoader.h
         include/EngineTypes/InputValidation.h
+        include/EngineTypes/MacroDefs.h
+        include/EngineTypes/Map.h
+        include/EngineTypes/Core.h
 )
 
+# ****************** Executable Configuration ****************** #
+# Determine executable flags based on platform and build type
 if (WIN32 AND CMAKE_BUILD_TYPE STREQUAL "Release")
+    # For Windows Release builds, we use the WIN32 flag to suppress the console window.
     set(EXE_FLAGS WIN32)
     message(STATUS "Building for Windows Release with flags: ${EXE_FLAGS}")
 else()
@@ -73,17 +83,21 @@ add_library(StarWarsCardGameLib STATIC
         ${APP_ICON_RESOURCE}
 )
 
+# Define preprocessor definitions for static linking of SDL3 and SDL3_net
 target_compile_definitions(StarWarsCardGameLib PUBLIC SDL_STATIC SDL3_STATIC SDL3_NET_STATIC)
-#target_link_libraries(StarWarsCardGameLib PUBLIC SDL3::SDL3 SDL3_net::SDL3_net)
-
-target_link_libraries(StarWarsCardGameLib PUBLIC SDL3::SDL3 SDL3_net::SDL3_net Vulkan::Vulkan)
-target_link_libraries(StarWarsCardGameLib PUBLIC nlohmann_json::nlohmann_json)
-target_link_libraries(StarWarsCardGameLib PUBLIC ${NLOHMANN_JSON_TARGET_NAME})
 
 
+
+
+# ****************** Executable target for the game ****************** #
 add_executable(StarWarsCardGame ${EXE_FLAGS} main.cpp
         ${APP_ICON_RESOURCE}
 )
+
+
+
+# ****************** Post-build and linking configurations ****************** #
+
 # Link the executable target to the library target
 target_link_libraries(StarWarsCardGame PRIVATE StarWarsCardGameLib)
 
@@ -111,6 +125,7 @@ if(WIN32)
     endif()
 endif()
 
+# Include directories for the library target
 target_include_directories(StarWarsCardGameLib PRIVATE imgui third_party/imgui)
 target_include_directories(StarWarsCardGameLib PRIVATE imgui third_party/imgui/backends)
 target_include_directories(StarWarsCardGameLib PRIVATE stb third_party/stb)
@@ -118,6 +133,7 @@ target_include_directories(StarWarsCardGameLib PRIVATE SWCG include)
 target_include_directories(StarWarsCardGameLib PRIVATE third_party/imrad/include)
 target_include_directories(StarWarsCardGameLib PRIVATE third_party/json/include)
 
+# Include directories for the executable target
 target_include_directories(StarWarsCardGame PRIVATE imgui third_party/imgui)
 target_include_directories(StarWarsCardGame PRIVATE imgui third_party/imgui/backends)
 target_include_directories(StarWarsCardGame PRIVATE stb third_party/stb)
@@ -125,9 +141,11 @@ target_include_directories(StarWarsCardGame PRIVATE SWCG include)
 target_include_directories(StarWarsCardGame PRIVATE third_party/imrad/include)
 target_include_directories(StarWarsCardGame PRIVATE third_party/json/include)
 
+# ImGui setup
 set(IMGUI_DIR third_party/imgui)
 set(IMGUI_BACKEND_DIR ${IMGUI_DIR}/backends)
 
+# Add ImGui source files to the library target
 target_sources(StarWarsCardGameLib PRIVATE
         ${IMGUI_DIR}/imgui.cpp
         ${IMGUI_DIR}/imgui_draw.cpp
@@ -137,16 +155,21 @@ target_sources(StarWarsCardGameLib PRIVATE
         ${IMGUI_BACKEND_DIR}/imgui_impl_sdl3.cpp
 )
 
-# Link to the actual SDL3 library.
+# Link to the actual SDL3 and Vulkan libraries.
 target_link_libraries(StarWarsCardGameLib PUBLIC SDL3::SDL3 SDL3_net::SDL3_net Vulkan::Vulkan)
+
+# Link to the nlohmann_json library
 target_link_libraries(StarWarsCardGameLib PUBLIC nlohmann_json::nlohmann_json)
 target_link_libraries(StarWarsCardGameLib PUBLIC ${NLOHMANN_JSON_TARGET_NAME})
 
+# Copy Resources folder to the output directory after building
 add_custom_command(TARGET StarWarsCardGame POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/Resources
         $<TARGET_FILE_DIR:StarWarsCardGame>/Resources
 )
+
+# On Windows, copy the SDL3 and SDL3_net DLLs to the output directory after building
 if(WIN32)
     add_custom_command(TARGET StarWarsCardGame POST_BUILD
             COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -156,6 +179,7 @@ if(WIN32)
     )
 endif()
 
+# Installation rules
 if(UNIX)
     install(TARGETS StarWarsCardGame DESTINATION bin)
     # Create a symlink 'swcg' -> 'StarWarsCardGame' in the install bin dir
@@ -180,7 +204,8 @@ if(UNIX)
     )
 endif()
 
-# Enable testing
+# ****************** Testing Configuration ****************** #
+enable_testing()
 add_executable(StarWarsCardGameTest tests/test_main.cpp tests/doctest.h)
 target_link_libraries(StarWarsCardGameTest PRIVATE StarWarsCardGameLib)
 

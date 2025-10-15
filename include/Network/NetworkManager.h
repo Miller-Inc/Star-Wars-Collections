@@ -2,16 +2,24 @@
 // Created by James Miller on 9/5/2025.
 //
 
+/// NetworkManager.h
+/// This file contains the declaration of the NetworkManager class, which manages network connections,
+///     including creating servers and clients, sending and receiving data, and handling asynchronous connections.
+///     It uses SDL_net for networking functionality and provides a higher-level interface for network operations.
+///     The class supports both synchronous and asynchronous operations, making it suitable for various networked applications.
+///     The NetworkManager class is designed to be thread-safe and can handle multiple connections simultaneously.
+///     The main code has been adapted to fit into the engine's architecture, utilizing engine-specific types and logging mechanisms.
+
+
 #pragma once
-#include <functional>
-#include "SDL3/SDL.h"
-#include <SDL3_net/SDL_net.h>
-#include <mutex>
-#include <condition_variable>
-#include <thread>
+#include <functional> // For std::function
+#include "SDL3/SDL.h" // For SDL types and functions
+#include <SDL3_net/SDL_net.h> // For SDL_net types and functions
+#include <condition_variable> // For std::condition_variable
+#include <thread> // For std::thread
+#include "EngineTypes/Core.h" // For engine core definitions
 
-#include "EngineTypes/Array.h"
-
+/// Taken from SDL_net documentation
 struct NET_Address
 {
     char *hostname;
@@ -23,16 +31,18 @@ struct NET_Address
     NET_Address *resolver_next;  // a linked list for the resolution job queue.
 };
 
+/// Message struct for sending and receiving raw data
 typedef struct message
 {
     void *data;
     int len;
 } MMessage;
 
+/// Simple redefinitions for SDL_net types
 typedef NET_StreamSocket* SocketPtr;
-typedef NET_Server* ServerPtr;
 
-#define MAX_STRING_MESSAGE_LEN 1024
+/// Simple redefinition for SDL_net server type
+typedef NET_Server* ServerPtr;
 
 namespace MillerInc::Network
 {

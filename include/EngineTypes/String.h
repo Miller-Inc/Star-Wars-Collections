@@ -9,7 +9,4 @@
 namespace MillerInc
 {
     typedef std::string MString; // Simple alias for std::string
-
-    #define MMap std::map
-
 }

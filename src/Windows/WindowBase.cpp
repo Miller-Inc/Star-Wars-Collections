@@ -12,7 +12,7 @@ namespace MillerInc::GUI
 
         if (mGameInstance != nullptr)
         {
-            Textures = mGameInstance->LoadResources(Name);
+            mTextures = mGameInstance->LoadResources(Name);
         } else {
             M_LOGGER(Logger::LogCore, Logger::Warning, "GameInstance is null. Cannot load resources for window: " + Name);
         }
